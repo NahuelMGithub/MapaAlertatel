@@ -5,3 +5,10 @@ echo "*.csv" >> .gitignore
 echo node_modules/ >> .gitignore
 echo .DS_Store >> .gitignore
 echo Thumbs.db >> .gitignore
+data/
+*.xlsx
+*.xls
+*.csv
+node_modules/
+.DS_Store
+Thumbs.db
