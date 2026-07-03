@@ -5,6 +5,8 @@ data/municipios.json
 *.xls
 *.csv
 node_modules/
+server/data/database.sqlite
+server/data/*.sqlite
 .DS_Store
 Thumbs.db
 Facturas.txt
