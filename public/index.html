@@ -3,46 +3,118 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mapa Municipios Buenos Aires</title>
+  <title>Alertatel CRM Comercial</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
   <link rel="stylesheet" href="../src/styles/main.css">
 </head>
 <body>
-  <div id="map"></div>
-  <div id="info-panel">
-<div class="filter-container">
-  <label for="estado-filter">Estado:</label>
-  <select id="estado-filter">
-    <option value="todos">Todos</option>
-    <option value="Cliente">Cliente</option>
-    <option value="Prospecto">Prospecto</option>
-  </select>
+  <div class="app-shell">
+    <header class="app-header">
+      <div class="app-header__brand">
+        <div class="app-logo">A</div>
+        <div>
+          <p class="app-header__eyebrow">Alertatel</p>
+          <h1>CRM Comercial</h1>
+        </div>
+      </div>
+      <div class="app-header__context">
+        <span class="app-header__pill app-header__pill--active">Mapa comercial</span>
+        <span class="app-header__pill">Trabajo diario</span>
+        <span class="app-header__pill">Oportunidades</span>
+      </div>
+    </header>
 
-  <label for="nombre-filter">Nombre:</label>
-  <input type="text" id="nombre-filter" placeholder="Buscar municipio...">
+    <main class="crm-layout">
+      <aside class="left-sidebar" aria-label="Filtros y municipios">
+        <section class="panel-section panel-section--filters">
+          <div class="panel-section__header">
+            <p class="panel-section__eyebrow">Búsqueda</p>
+            <h2>Filtros</h2>
+          </div>
 
-  <label for="pob-min">Población mínima:</label>
-  <input type="number" id="pob-min" placeholder="Ej: 10000">
+          <div class="filter-container">
+            <label for="estado-filter">Estado</label>
+            <select id="estado-filter">
+              <option value="todos">Todos</option>
+              <option value="Cliente">Cliente</option>
+              <option value="Prospecto">Prospecto</option>
+            </select>
 
-  <label for="pob-max">Población máxima:</label>
-  <input type="number" id="pob-max" placeholder="Ej: 50000">
+            <label for="nombre-filter">Nombre</label>
+            <input type="text" id="nombre-filter" placeholder="Buscar municipio...">
 
-  <label for="politico-filter">Partido Político:</label>
-  <input type="text" id="politico-filter" placeholder="Ej: LLA">
+            <div class="filter-row">
+              <div>
+                <label for="pob-min">Población mínima</label>
+                <input type="number" id="pob-min" placeholder="10000">
+              </div>
+              <div>
+                <label for="pob-max">Población máxima</label>
+                <input type="number" id="pob-max" placeholder="50000">
+              </div>
+            </div>
 
-  <label for="seccionelectoral-filter">Sección Electoral:</label>
-  <input type="text" id="seccionelectoral-filter" placeholder="Ej: 7.a">
+            <label for="politico-filter">Partido político</label>
+            <input type="text" id="politico-filter" placeholder="Ej: LLA">
 
-  <button id="apply-filters">Filtrar</button>
-</div>
+            <label for="seccionelectoral-filter">Sección electoral</label>
+            <input type="text" id="seccionelectoral-filter" placeholder="Ej: 7.a">
 
+            <button id="apply-filters">Filtrar municipios</button>
+          </div>
+        </section>
 
-    <div id="lista-resultados"></div>
+        <section class="panel-section panel-section--list">
+          <div class="panel-section__header panel-section__header--row">
+            <div>
+              <p class="panel-section__eyebrow">Cuentas</p>
+              <h2>Municipios</h2>
+            </div>
+            <span class="panel-section__badge">CRM</span>
+          </div>
+          <div id="lista-resultados"></div>
+        </section>
+      </aside>
 
+      <section class="map-workspace" aria-label="Mapa comercial">
+        <div class="workspace-header">
+          <div>
+            <p class="panel-section__eyebrow">Vista territorial</p>
+            <h2>Mapa comercial</h2>
+          </div>
+          <span class="workspace-header__meta">Buenos Aires</span>
+        </div>
+        <div class="map-frame">
+          <div id="map"></div>
+        </div>
+      </section>
 
-    <div id="info-content">
-      <p>Selecciona un municipio en el mapa</p>
-    </div>
+      <aside id="info-panel" class="detail-panel" aria-label="Ficha del municipio">
+        <div class="workspace-header">
+          <div>
+            <p class="panel-section__eyebrow">Cuenta</p>
+            <h2>Ficha del municipio</h2>
+          </div>
+        </div>
+
+        <div id="info-content">
+          <p>Selecciona un municipio en el mapa</p>
+        </div>
+      </aside>
+    </main>
+
+    <section class="future-workspace" aria-label="Vistas futuras">
+      <div>
+        <p class="panel-section__eyebrow">Próximas vistas</p>
+        <h2>Espacio reservado para trabajo diario</h2>
+      </div>
+      <div class="future-workspace__items">
+        <span>Tareas</span>
+        <span>Actividades</span>
+        <span>Oportunidades</span>
+        <span>Señales comerciales</span>
+      </div>
+    </section>
   </div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
