@@ -387,8 +387,17 @@ a:hover {
   padding: 14px;
 }
 
+.municipality-card__identity {
+  min-width: 0;
+}
+
 .municipality-card__section {
   padding: 12px;
+}
+
+.municipality-card__section--highlight {
+  border-color: #cfd9ea;
+  background: #fbfdff;
 }
 
 .municipality-card__eyebrow {
@@ -414,6 +423,12 @@ a:hover {
   font-size: 13px;
 }
 
+.municipality-card__status-note {
+  margin: 8px 0 0;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
 .municipality-card__status {
   flex: 0 0 auto;
 }
@@ -423,6 +438,88 @@ a:hover {
   color: var(--text);
   font-size: 13px;
   font-weight: 750;
+}
+
+.section-title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.section-title-row h3 {
+  margin-bottom: 0;
+}
+
+.section-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 0 8px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface-muted);
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.metric-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.metric-card,
+.next-action-placeholder,
+.placeholder-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.metric-card {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 5px;
+  padding: 10px;
+}
+
+.metric-card span,
+.next-action-placeholder span,
+.placeholder-card span {
+  color: var(--text-soft);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.metric-card strong {
+  color: var(--text);
+  font-size: 17px;
+  font-weight: 750;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.next-action-placeholder {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-top: 10px;
+  padding: 10px;
+  background: var(--surface-muted);
+}
+
+.next-action-placeholder strong,
+.placeholder-card strong {
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 650;
+  line-height: 1.35;
 }
 
 .info-grid {
@@ -458,13 +555,22 @@ a:hover {
   overflow-wrap: anywhere;
 }
 
-.future-actions {
+.placeholder-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
 }
 
-.future-actions button {
+.placeholder-card {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+}
+
+.placeholder-card button {
+  min-width: 0;
   min-height: 34px;
   padding: 7px 9px;
   border: 1px solid var(--border);
@@ -551,7 +657,8 @@ a:hover {
 
   .filter-row,
   .info-grid,
-  .future-actions {
+  .metric-grid,
+  .placeholder-grid {
     grid-template-columns: 1fr;
   }
 }

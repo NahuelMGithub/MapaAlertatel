@@ -28,46 +28,62 @@ function statusClass(estado) {
   return estado === "Cliente" ? "cliente" : "prospecto";
 }
 
+function statusDescription(estado) {
+  return estado === "Cliente" ? "Cuenta activa en Alertatel" : "Cuenta pendiente de desarrollo comercial";
+}
+
 export function renderInfoPanel(infoContent, m) {
   infoContent.innerHTML = `
     <article class="municipality-card">
       <header class="municipality-card__header">
-        <div>
-          <p class="municipality-card__eyebrow">Municipio</p>
+        <div class="municipality-card__identity">
+          <p class="municipality-card__eyebrow">Cuenta municipal</p>
           <h2 class="municipality-card__title">${m.nombre}</h2>
           <p class="municipality-card__subtitle">${valueOrDash(m.Provincia)} · Sección ${valueOrDash(m.seccionelectoral)}</p>
+          <p class="municipality-card__status-note">${statusDescription(m.estado)}</p>
         </div>
         <span class="municipality-card__status status-badge status-badge--${statusClass(m.estado)}">${valueOrDash(m.estado)}</span>
       </header>
 
-      <section class="municipality-card__section">
-        <h3>Datos políticos/institucionales</h3>
-        <div class="info-grid">
-          <div class="info-item"><span>Intendente</span><strong>${valueOrDash(m.intendente)}</strong></div>
-          <div class="info-item"><span>Partido político</span><strong>${valueOrDash(m.politico)}</strong></div>
-          <div class="info-item"><span>Población</span><strong>${valueOrDash(m.poblacion)}</strong></div>
-          <div class="info-item info-item--wide"><span>Localidades</span><strong>${valueOrDash(m.localidades)}</strong></div>
+      <section class="municipality-card__section municipality-card__section--highlight">
+        <div class="section-title-row">
+          <div>
+            <p class="municipality-card__eyebrow">Datos de Alertatel</p>
+            <h3>Resumen comercial</h3>
+          </div>
+          <span class="section-chip">Prioridad pendiente</span>
+        </div>
+        <div class="metric-grid">
+          <div class="metric-card">
+            <span>Cantidad de botones</span>
+            <strong>${valueOrDash(m["Cantidad de botones"])}</strong>
+          </div>
+          <div class="metric-card">
+            <span>Pagan</span>
+            <strong>${moneyOrDash(m.Pagan)}</strong>
+          </div>
+          <div class="metric-card">
+            <span>Poseen sistema</span>
+            <strong>${valueOrDash(m.sistema)}</strong>
+          </div>
+          <div class="metric-card">
+            <span>Fecha inicio</span>
+            <strong>${valueOrDash(m["Fecha inicio"])}</strong>
+          </div>
+        </div>
+        <div class="next-action-placeholder">
+          <span>Próxima acción</span>
+          <strong>Sin próxima acción registrada</strong>
         </div>
       </section>
 
       <section class="municipality-card__section">
-        <h3>Datos comerciales</h3>
+        <h3>Contacto comercial y canales</h3>
         <div class="info-grid">
-          <div class="info-item"><span>Estado</span><strong>${valueOrDash(m.estado)}</strong></div>
-          <div class="info-item"><span>Poseen sistema</span><strong>${valueOrDash(m.sistema)}</strong></div>
-          <div class="info-item"><span>Fecha de inicio</span><strong>${valueOrDash(m["Fecha inicio"])}</strong></div>
-          <div class="info-item"><span>Cantidad de botones</span><strong>${valueOrDash(m["Cantidad de botones"])}</strong></div>
-          <div class="info-item"><span>Pagan</span><strong>${moneyOrDash(m.Pagan)}</strong></div>
-        </div>
-      </section>
-
-      <section class="municipality-card__section">
-        <h3>Contacto y web</h3>
-        <div class="info-grid">
-          <div class="info-item"><span>Contacto</span><strong>${valueOrDash(m.contacto)}</strong></div>
+          <div class="info-item info-item--wide"><span>Contacto principal</span><strong>${valueOrDash(m.contacto)}</strong></div>
           <div class="info-item"><span>Teléfono de contacto</span><strong>${valueOrDash(m.telefono)}</strong></div>
           <div class="info-item"><span>Teléfono municipal</span><strong>${valueOrDash(m.telefonoGobierno)}</strong></div>
-          <div class="info-item">
+          <div class="info-item info-item--wide">
             <span>Sitio web</span>
             <strong><a href="${websiteHref(m["Sitio Web"])}" target="_blank" rel="noopener noreferrer">${valueOrDash(m["Sitio Web"])}</a></strong>
           </div>
@@ -75,23 +91,61 @@ export function renderInfoPanel(infoContent, m) {
       </section>
 
       <section class="municipality-card__section">
-        <h3>Observaciones y datos disponibles</h3>
+        <div class="section-title-row">
+          <div>
+            <p class="municipality-card__eyebrow">Datos públicos</p>
+            <h3>Institucional y territorio</h3>
+          </div>
+          <span class="section-chip">Fuente externa/manual</span>
+        </div>
         <div class="info-grid">
+          <div class="info-item"><span>Intendente</span><strong>${valueOrDash(m.intendente)}</strong></div>
+          <div class="info-item"><span>Partido político</span><strong>${valueOrDash(m.politico)}</strong></div>
+          <div class="info-item"><span>Población</span><strong>${valueOrDash(m.poblacion)}</strong></div>
+          <div class="info-item"><span>Categoría</span><strong>${valueOrDash(m["Categoría de Gobierno"])}</strong></div>
+          <div class="info-item"><span>Departamento</span><strong>${valueOrDash(m.Departamento)}</strong></div>
           <div class="info-item"><span>Distancia a capital</span><strong>${valueOrDash(m["Distancia a la capital provincial"])}</strong></div>
           <div class="info-item"><span>Perfil económico</span><strong>${valueOrDash(m["Perfil económico de la región"])}</strong></div>
           <div class="info-item"><span>Parques industriales</span><strong>${valueOrDash(m["Cantidad de Parques Industriales RENPI"])}</strong></div>
-          <div class="info-item"><span>Incendios 1999-2022</span><strong>${valueOrDash(m["Incendios reportados en el período 1999-2022"])}</strong></div>
-          <div class="info-item"><span>Inundaciones 1999-2022</span><strong>${valueOrDash(m["Inundaciones reportadas en el período 1999-2022"])}</strong></div>
+          <div class="info-item info-item--wide"><span>Localidades</span><strong>${valueOrDash(m.localidades)}</strong></div>
           <div class="info-item info-item--wide"><span>Dirección postal</span><strong>${valueOrDash(m["Dirección postal de la sede de Gobierno"])}</strong></div>
         </div>
       </section>
 
       <section class="municipality-card__section">
-        <h3>Acciones futuras</h3>
-        <div class="future-actions">
-          <button type="button" disabled>Preparar reunión</button>
-          <button type="button" disabled>Agregar tarea</button>
-          <button type="button" disabled>Ver actividades</button>
+        <h3>Contexto público disponible</h3>
+        <div class="info-grid">
+          <div class="info-item"><span>Incendios 1999-2022</span><strong>${valueOrDash(m["Incendios reportados en el período 1999-2022"])}</strong></div>
+          <div class="info-item"><span>Inundaciones 1999-2022</span><strong>${valueOrDash(m["Inundaciones reportadas en el período 1999-2022"])}</strong></div>
+          <div class="info-item"><span>Latitud</span><strong>${valueOrDash(m.lat)}</strong></div>
+          <div class="info-item"><span>Longitud</span><strong>${valueOrDash(m.long)}</strong></div>
+          <div class="info-item info-item--wide"><span>Fiestas locales</span><strong>${valueOrDash(m["Fiestas locales"])}</strong></div>
+        </div>
+      </section>
+
+      <section class="municipality-card__section">
+        <h3>Trabajo comercial pendiente</h3>
+        <div class="placeholder-grid">
+          <div class="placeholder-card">
+            <span>Tareas</span>
+            <strong>Sin tareas registradas</strong>
+            <button type="button" disabled>Agregar tarea</button>
+          </div>
+          <div class="placeholder-card">
+            <span>Actividades</span>
+            <strong>Sin actividades registradas</strong>
+            <button type="button" disabled>Ver historial</button>
+          </div>
+          <div class="placeholder-card">
+            <span>Oportunidades</span>
+            <strong>Sin oportunidades estructuradas</strong>
+            <button type="button" disabled>Crear oportunidad</button>
+          </div>
+          <div class="placeholder-card">
+            <span>IA y señales</span>
+            <strong>Sin señales comerciales disponibles</strong>
+            <button type="button" disabled>Analizar municipio</button>
+          </div>
         </div>
       </section>
     </article>
