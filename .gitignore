@@ -1,15 +1,10 @@
-echo data/ > .gitignore
-echo "*.xlsx" >> .gitignore
-echo "*.xls" >> .gitignore
-echo "*.csv" >> .gitignore
-echo node_modules/ >> .gitignore
-echo .DS_Store >> .gitignore
-echo Thumbs.db >> .gitignore
-data/
+/data/
+municipios.json
+data/municipios.json
 *.xlsx
 *.xls
 *.csv
 node_modules/
 .DS_Store
-Thumbs.dbmunicipios.json
+Thumbs.db
 Facturas.txt

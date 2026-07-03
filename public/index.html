@@ -5,57 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mapa Municipios Buenos Aires</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <style>
-    body {
-      margin: 0;
-      display: flex;
-      height: 100vh;
-      font-family: Arial, sans-serif;
-    }
-    #map {
-      flex: 3;
-    }
-    #info-panel {
-      flex: 1;
-      max-width: 350px;
-      background: #f4f4f4;
-      padding: 10px;
-      overflow-y: auto;
-      border-left: 1px solid #ccc;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-    .filter-container {
-      display: flex;
-      flex-direction: column;
-      gap: 5px;
-      padding: 5px;
-      background: #eaeaea;
-      border-radius: 5px;
-    }
-    #apply-filters {
-      padding: 6px 10px;
-      background: #1976d2;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: bold;
-      margin-top: 5px;
-    }
-    #apply-filters:hover {
-      background: #0d47a1;
-    }
-    .info-item {
-      margin-bottom: 5px;
-      font-size: 14px;
-    }
-  </style>
+  <link rel="stylesheet" href="../src/styles/main.css">
 </head>
 <body>
   <div id="map"></div>
-
   <div id="info-panel">
 <div class="filter-container">
   <label for="estado-filter">Estado:</label>
@@ -84,7 +37,7 @@
 </div>
 
 
-    <div id="lista-resultados" style="margin-top: 10px;"></div>
+    <div id="lista-resultados"></div>
 
 
     <div id="info-content">
@@ -93,6 +46,6 @@
   </div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="script.js"></script>
+  <script type="module" src="../src/scripts/app.js"></script>
 </body>
 </html>
