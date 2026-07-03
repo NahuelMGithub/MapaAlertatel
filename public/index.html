@@ -103,16 +103,97 @@
       </aside>
     </main>
 
-    <section class="future-workspace" aria-label="Vistas futuras">
-      <div>
-        <p class="panel-section__eyebrow">Próximas vistas</p>
-        <h2>Espacio reservado para trabajo diario</h2>
+    <section class="daily-workspace" aria-label="Trabajo diario">
+      <div class="daily-workspace__header">
+        <div>
+          <p class="panel-section__eyebrow">Vista futura del CRM</p>
+          <h2>Trabajo diario</h2>
+        </div>
+        <span class="section-chip">Próximamente</span>
       </div>
-      <div class="future-workspace__items">
-        <span>Tareas</span>
-        <span>Actividades</span>
-        <span>Oportunidades</span>
-        <span>Señales comerciales</span>
+
+      <div class="daily-grid">
+        <article class="daily-card">
+          <div class="daily-card__header">
+            <h3>Tareas pendientes</h3>
+            <span class="daily-count">3</span>
+          </div>
+          <div class="daily-list">
+            <div class="daily-item">
+              <span class="daily-status daily-status--late">Vencida</span>
+              <strong>Llamar a prospecto sin contacto confirmado</strong>
+              <p>Municipio pendiente de seguimiento comercial.</p>
+            </div>
+            <div class="daily-item">
+              <span class="daily-status daily-status--today">Hoy</span>
+              <strong>Revisar clientes con datos incompletos</strong>
+              <p>Validar teléfono, sistema actual y próxima acción.</p>
+            </div>
+          </div>
+        </article>
+
+        <article class="daily-card">
+          <div class="daily-card__header">
+            <h3>Municipios recomendados</h3>
+            <span class="daily-count">Mock</span>
+          </div>
+          <div class="daily-list">
+            <div class="daily-item">
+              <span class="daily-status daily-status--signal">Sugerido</span>
+              <strong>Prospectos con alta población</strong>
+              <p>Priorizar cuentas con mayor potencial territorial.</p>
+            </div>
+            <div class="daily-item">
+              <span class="daily-status daily-status--signal">Sugerido</span>
+              <strong>Clientes sin próxima acción</strong>
+              <p>Preparar agenda de seguimiento comercial.</p>
+            </div>
+          </div>
+        </article>
+
+        <article class="daily-card daily-card--empty">
+          <div class="daily-card__header">
+            <h3>Próximas reuniones</h3>
+            <span class="daily-count">0</span>
+          </div>
+          <div class="daily-empty">
+            <strong>No hay reuniones registradas</strong>
+            <p>La agenda se habilitará cuando existan tareas y actividades.</p>
+            <button type="button" disabled>Programar reunión · Próximamente</button>
+          </div>
+        </article>
+
+        <article class="daily-card">
+          <div class="daily-card__header">
+            <h3>Señales comerciales</h3>
+            <span class="daily-count">3</span>
+          </div>
+          <div class="daily-list">
+            <div class="daily-item">
+              <span class="daily-status daily-status--signal">Señal</span>
+              <strong>Dato de contacto faltante</strong>
+              <p>Revisar cuentas sin contacto principal cargado.</p>
+            </div>
+            <div class="daily-item">
+              <span class="daily-status daily-status--signal">Señal</span>
+              <strong>Prospecto con potencial</strong>
+              <p>Usar población y sistema actual para priorizar.</p>
+            </div>
+          </div>
+        </article>
+
+        <article class="daily-card">
+          <div class="daily-card__header">
+            <h3>Acciones rápidas</h3>
+            <span class="daily-count">CRM</span>
+          </div>
+          <div class="quick-actions">
+            <button type="button" disabled>Agregar tarea</button>
+            <button type="button" disabled>Registrar actividad</button>
+            <button type="button" disabled>Crear oportunidad</button>
+            <button type="button" disabled>Preparar reunión</button>
+          </div>
+        </article>
       </div>
     </section>
   </div>
