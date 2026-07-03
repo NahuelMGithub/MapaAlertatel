@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mapa Municipios Buenos Aires</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <style>
+    body {
+      margin: 0;
+      display: flex;
+      height: 100vh;
+      font-family: Arial, sans-serif;
+    }
+    #map {
+      flex: 3;
+    }
+    #info-panel {
+      flex: 1;
+      max-width: 350px;
+      background: #f4f4f4;
+      padding: 10px;
+      overflow-y: auto;
+      border-left: 1px solid #ccc;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .filter-container {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      padding: 5px;
+      background: #eaeaea;
+      border-radius: 5px;
+    }
+    #apply-filters {
+      padding: 6px 10px;
+      background: #1976d2;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      margin-top: 5px;
+    }
+    #apply-filters:hover {
+      background: #0d47a1;
+    }
+    .info-item {
+      margin-bottom: 5px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+
+  <div id="info-panel">
+<div class="filter-container">
+  <label for="estado-filter">Estado:</label>
+  <select id="estado-filter">
+    <option value="todos">Todos</option>
+    <option value="Cliente">Cliente</option>
+    <option value="Prospecto">Prospecto</option>
+  </select>
+
+  <label for="nombre-filter">Nombre:</label>
+  <input type="text" id="nombre-filter" placeholder="Buscar municipio...">
+
+  <label for="pob-min">Población mínima:</label>
+  <input type="number" id="pob-min" placeholder="Ej: 10000">
+
+  <label for="pob-max">Población máxima:</label>
+  <input type="number" id="pob-max" placeholder="Ej: 50000">
+
+  <label for="politico-filter">Partido Político:</label>
+  <input type="text" id="politico-filter" placeholder="Ej: LLA">
+
+  <label for="seccionelectoral-filter">Sección Electoral:</label>
+  <input type="text" id="seccionelectoral-filter" placeholder="Ej: 7.a">
+
+  <button id="apply-filters">Filtrar</button>
+</div>
+
+
+    <div id="lista-resultados" style="margin-top: 10px;"></div>
+
+
+    <div id="info-content">
+      <p>Selecciona un municipio en el mapa</p>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

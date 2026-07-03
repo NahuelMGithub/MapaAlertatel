@@ -1,0 +1,7 @@
+echo data/ > .gitignore
+echo "*.xlsx" >> .gitignore
+echo "*.xls" >> .gitignore
+echo "*.csv" >> .gitignore
+echo node_modules/ >> .gitignore
+echo .DS_Store >> .gitignore
+echo Thumbs.db >> .gitignore

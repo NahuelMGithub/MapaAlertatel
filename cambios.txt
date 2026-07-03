@@ -1,0 +1,44 @@
+
+
+
+
+que permita editar el json
+
+agregar campos:
+-Sec de seguridad
+-Sec genero
+-Tienen COM?
+-Aniversario
+
+
+
+Agregar poligonos
+
+
+Agregar notas?
+
+Edicion de datos
+
+segun chat gpt
+Funciones útiles
+
+Contador de resultados en tiempo real:
+
+Después de aplicar los filtros, mostrar cuántos municipios cumplen las condiciones.
+
+Lista lateral clickeable:
+
+Además de verlos en el mapa, tener una lista ordenada (por nombre o población) y al hacer clic, que centre el mapa en ese municipio.
+
+Resumen rápido de datos:
+
+Mostrar totales:
+
+Cuántos clientes vs prospectos.
+
+Población total sumada de los municipios filtrados.
+Comportamiento:
+
+Cuando hacés clic en el nombre en la lista, el mapa hace un flyTo a ese municipio y abre el popup (o el panel derecho) con toda la info.
+
+Si filtrás, la lista se vuelve a generar automáticamente mostrando solo los municipios que cumplen los filtros.
