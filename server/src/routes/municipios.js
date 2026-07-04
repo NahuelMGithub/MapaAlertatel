@@ -1,5 +1,23 @@
 const express = require("express");
 
+const COMMERCIAL_FIELDS = [
+  "estado_comercial",
+  "proxima_accion",
+  "fecha_proxima_accion",
+  "notas",
+  "prioridad",
+  "sistema_actual"
+];
+
+const FIELD_LIMITS = {
+  estado_comercial: 80,
+  proxima_accion: 300,
+  fecha_proxima_accion: 10,
+  notas: 5000,
+  prioridad: 50,
+  sistema_actual: 200
+};
+
 function parseRawMunicipio(row) {
   const raw = JSON.parse(row.raw_json);
 
@@ -16,6 +34,87 @@ function parseRawMunicipio(row) {
     long: row.long,
     raw
   };
+}
+
+function parseMunicipioWithComercial(row) {
+  const municipio = parseRawMunicipio(row);
+
+  municipio.comercial = {
+    estado_comercial: row.estado_comercial,
+    proxima_accion: row.proxima_accion,
+    fecha_proxima_accion: row.fecha_proxima_accion,
+    notas: row.notas,
+    prioridad: row.prioridad,
+    sistema_actual: row.sistema_actual,
+    created_at: row.comercial_created_at,
+    updated_at: row.comercial_updated_at
+  };
+
+  return municipio;
+}
+
+function normalizeTextField(value, field) {
+  if (value === undefined) {
+    return undefined;
+  }
+
+  if (value === null) {
+    return null;
+  }
+
+  if (typeof value !== "string") {
+    throw new Error(`${field} debe ser texto o null`);
+  }
+
+  const normalized = value.trim();
+  const limit = FIELD_LIMITS[field];
+
+  if (normalized.length > limit) {
+    throw new Error(`${field} no puede superar ${limit} caracteres`);
+  }
+
+  return normalized || null;
+}
+
+function isValidDateOnly(value) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return false;
+  }
+
+  const date = new Date(`${value}T00:00:00.000Z`);
+  return !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === value;
+}
+
+function validateCommercialPayload(body) {
+  if (!body || typeof body !== "object" || Array.isArray(body)) {
+    return { error: "El body debe ser un objeto JSON" };
+  }
+
+  const unknownFields = Object.keys(body).filter((field) => !COMMERCIAL_FIELDS.includes(field));
+
+  if (unknownFields.length > 0) {
+    return { error: `Campos no permitidos: ${unknownFields.join(", ")}` };
+  }
+
+  const payload = {};
+
+  try {
+    for (const field of COMMERCIAL_FIELDS) {
+      payload[field] = normalizeTextField(body[field], field);
+    }
+  } catch (error) {
+    return { error: error.message };
+  }
+
+  if (Object.values(payload).every((value) => value === undefined)) {
+    return { error: "Debe enviar al menos un campo comercial para actualizar" };
+  }
+
+  if (payload.fecha_proxima_accion && !isValidDateOnly(payload.fecha_proxima_accion)) {
+    return { error: "fecha_proxima_accion debe tener formato YYYY-MM-DD" };
+  }
+
+  return { payload };
 }
 
 module.exports = function municipiosRouter(db) {
@@ -36,9 +135,29 @@ module.exports = function municipiosRouter(db) {
   router.get("/:id", (req, res) => {
     const row = db
       .prepare(
-        `SELECT id, nombre, departamento, provincia, estado, politico, intendente, poblacion, lat, long, raw_json
-         FROM municipios
-         WHERE id = ?`
+        `SELECT
+           m.id,
+           m.nombre,
+           m.departamento,
+           m.provincia,
+           m.estado,
+           m.politico,
+           m.intendente,
+           m.poblacion,
+           m.lat,
+           m.long,
+           m.raw_json,
+           mc.estado_comercial,
+           mc.proxima_accion,
+           mc.fecha_proxima_accion,
+           mc.notas,
+           mc.prioridad,
+           mc.sistema_actual,
+           mc.created_at AS comercial_created_at,
+           mc.updated_at AS comercial_updated_at
+         FROM municipios m
+         LEFT JOIN municipio_comercial mc ON mc.municipio_id = m.id
+         WHERE m.id = ?`
       )
       .get(req.params.id);
 
@@ -47,7 +166,80 @@ module.exports = function municipiosRouter(db) {
       return;
     }
 
-    res.json(parseRawMunicipio(row));
+    res.json(parseMunicipioWithComercial(row));
+  });
+
+  router.patch("/:id/comercial", (req, res) => {
+    const municipio = db.prepare("SELECT id FROM municipios WHERE id = ?").get(req.params.id);
+
+    if (!municipio) {
+      res.status(404).json({ error: "Municipio no encontrado" });
+      return;
+    }
+
+    const validation = validateCommercialPayload(req.body);
+
+    if (validation.error) {
+      res.status(400).json({ error: validation.error });
+      return;
+    }
+
+    const current =
+      db.prepare("SELECT * FROM municipio_comercial WHERE municipio_id = ?").get(req.params.id) || {};
+    const next = {};
+
+    for (const field of COMMERCIAL_FIELDS) {
+      next[field] = validation.payload[field] === undefined ? current[field] || null : validation.payload[field];
+    }
+
+    db.prepare(
+      `INSERT INTO municipio_comercial (
+         municipio_id,
+         estado_comercial,
+         proxima_accion,
+         fecha_proxima_accion,
+         notas,
+         prioridad,
+         sistema_actual,
+         updated_at
+       )
+       VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+       ON CONFLICT(municipio_id) DO UPDATE SET
+         estado_comercial = excluded.estado_comercial,
+         proxima_accion = excluded.proxima_accion,
+         fecha_proxima_accion = excluded.fecha_proxima_accion,
+         notas = excluded.notas,
+         prioridad = excluded.prioridad,
+         sistema_actual = excluded.sistema_actual,
+         updated_at = CURRENT_TIMESTAMP`
+    ).run(
+      req.params.id,
+      next.estado_comercial,
+      next.proxima_accion,
+      next.fecha_proxima_accion,
+      next.notas,
+      next.prioridad,
+      next.sistema_actual
+    );
+
+    const row = db
+      .prepare(
+        `SELECT
+           municipio_id,
+           estado_comercial,
+           proxima_accion,
+           fecha_proxima_accion,
+           notas,
+           prioridad,
+           sistema_actual,
+           created_at,
+           updated_at
+         FROM municipio_comercial
+         WHERE municipio_id = ?`
+      )
+      .get(req.params.id);
+
+    res.json(row);
   });
 
   return router;
