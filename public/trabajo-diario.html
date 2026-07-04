@@ -32,7 +32,8 @@
         </div>
         <div class="workday-hero__meta">
           <span class="section-chip">Template visual</span>
-          <strong>Hoy</strong>
+          <strong id="workday-current-date">Hoy</strong>
+          <button class="secondary-action" type="button" id="workday-help-button">Ayuda</button>
         </div>
       </section>
 
@@ -43,35 +44,12 @@
               <p class="panel-section__eyebrow">Rutina</p>
               <h3>Mi rutina diaria</h3>
             </div>
-            <span class="daily-count">5 pasos</span>
+            <span class="daily-count" id="ritual-count">Cargando</span>
           </div>
 
-          <div class="routine-list">
-            <div class="routine-item">
-              <span>08:30</span>
-              <strong>Revisar agenda y vencimientos</strong>
-              <p>Identificar cuentas que necesitan contacto durante el dia.</p>
-            </div>
-            <div class="routine-item">
-              <span>09:00</span>
-              <strong>Priorizar llamados</strong>
-              <p>Separar clientes, prospectos calientes y datos incompletos.</p>
-            </div>
-            <div class="routine-item">
-              <span>11:30</span>
-              <strong>Actualizar fichas</strong>
-              <p>Registrar estado comercial, proxima accion y notas.</p>
-            </div>
-            <div class="routine-item">
-              <span>15:00</span>
-              <strong>Preparar seguimiento</strong>
-              <p>Ordenar reuniones, propuestas y respuestas pendientes.</p>
-            </div>
-            <div class="routine-item">
-              <span>17:30</span>
-              <strong>Cierre del dia</strong>
-              <p>Dejar prioridades claras para la siguiente jornada.</p>
-            </div>
+          <div class="form-error is-hidden" id="ritual-error"></div>
+          <div class="routine-list" id="ritual-list">
+            <div class="workday-loading">Cargando ritual diario...</div>
           </div>
         </article>
 
@@ -81,25 +59,36 @@
               <p class="panel-section__eyebrow">Hoy</p>
               <h3>Tareas de hoy</h3>
             </div>
-            <span class="daily-count">6 tareas</span>
+            <span class="daily-count" id="tasks-count">Cargando</span>
           </div>
 
-          <div class="work-list">
-            <div class="work-list-item">
-              <span class="daily-status daily-status--late">Vencida</span>
-              <strong>Llamar municipios sin proxima accion</strong>
-              <p>Revisar clientes activos y prospectos con seguimiento abierto.</p>
-            </div>
-            <div class="work-list-item">
-              <span class="daily-status daily-status--today">Hoy</span>
-              <strong>Validar contactos principales</strong>
-              <p>Completar telefono, cargo y canal preferido.</p>
-            </div>
-            <div class="work-list-item">
-              <span class="daily-status daily-status--signal">Seguimiento</span>
-              <strong>Preparar tres conversaciones comerciales</strong>
-              <p>Usar ficha, estado actual y oportunidad esperada.</p>
-            </div>
+          <form class="task-create-form" id="task-create-form">
+            <label>
+              <span>Titulo</span>
+              <input name="titulo" type="text" placeholder="Nueva tarea del dia" required>
+            </label>
+            <label>
+              <span>Prioridad</span>
+              <select name="prioridad">
+                <option value="media">Media</option>
+                <option value="alta">Alta</option>
+                <option value="baja">Baja</option>
+              </select>
+            </label>
+            <label class="task-create-form__description">
+              <span>Descripcion</span>
+              <input name="descripcion" type="text" placeholder="Detalle opcional">
+            </label>
+            <button class="primary-action" type="submit">Crear tarea</button>
+          </form>
+
+          <div class="form-error is-hidden" id="tasks-error"></div>
+          <div class="work-list" id="tasks-list">
+            <div class="workday-loading">Cargando tareas...</div>
+          </div>
+          <div class="daily-empty is-hidden" id="tasks-empty">
+            <strong>No hay tareas para hoy</strong>
+            <p>Agrega una tarea para ordenar el trabajo del dia.</p>
           </div>
         </article>
 
@@ -232,5 +221,46 @@
       </section>
     </main>
   </div>
+
+  <div class="workday-modal is-hidden" id="workday-help-modal" role="dialog" aria-modal="true" aria-labelledby="workday-help-title">
+    <div class="workday-modal__panel">
+      <div class="workday-modal__header">
+        <div>
+          <p class="panel-section__eyebrow">Guia rapida</p>
+          <h2 id="workday-help-title">Como usar Trabajo diario</h2>
+        </div>
+        <button class="secondary-action" type="button" id="workday-help-close">Cerrar</button>
+      </div>
+
+      <p class="workday-modal__intro">
+        Esta pantalla sirve para empezar el dia con foco: primero ordenas la rutina, despues definis tareas concretas y reservás tiempo para avanzar el objetivo del mes.
+      </p>
+
+      <ol class="workday-help-steps">
+        <li>
+          <strong>Ritual diario</strong>
+          <span>Marca los pasos base para revisar canales, mensajes y pendientes.</span>
+        </li>
+        <li>
+          <strong>Del ritual salen las tareas del dia</strong>
+          <span>Converti lo importante en tareas claras para hoy.</span>
+        </li>
+        <li>
+          <strong>Primero solo urgentes</strong>
+          <span>Resolvé lo que bloquea, vence o necesita respuesta inmediata.</span>
+        </li>
+        <li>
+          <strong>Trabaja 2 horas en OKR</strong>
+          <span>Reservá un bloque real para avanzar el objetivo mensual.</span>
+        </li>
+        <li>
+          <strong>Despues pendientes</strong>
+          <span>Con lo urgente y el OKR cubiertos, continua con el resto de tareas.</span>
+        </li>
+      </ol>
+    </div>
+  </div>
+
+  <script type="module" src="../src/scripts/trabajoDiario.js"></script>
 </body>
 </html>
