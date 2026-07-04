@@ -6,7 +6,7 @@
   <title>Trabajo diario - Alertatel CRM Comercial</title>
   <link rel="stylesheet" href="../src/styles/main.css">
 </head>
-<body>
+<body class="workday-body">
   <div class="app-shell app-shell--daily-page">
     <header class="app-header">
       <div class="app-header__brand">
@@ -19,93 +19,122 @@
       <div class="app-header__context">
         <a class="app-header__pill" href="index.html">Mapa comercial</a>
         <a class="app-header__pill app-header__pill--active" href="trabajo-diario.html">Trabajo diario</a>
-        <span class="app-header__pill app-header__pill--disabled">Oportunidades · Próximamente</span>
+        <span class="app-header__pill app-header__pill--disabled">Oportunidades - Proximamente</span>
       </div>
     </header>
 
-    <main class="workday-page" aria-label="Trabajo diario">
+    <main class="workday-page" aria-label="Centro de Operaciones">
       <section class="workday-hero">
         <div>
-          <p class="panel-section__eyebrow">Modo ejecución</p>
+          <p class="panel-section__eyebrow">Centro de Operaciones</p>
           <h2>Trabajo diario</h2>
-          <p>Checklist operativo para ordenar llamadas, seguimiento y prioridades comerciales. Datos hardcodeados hasta implementar la base local.</p>
+          <p>Vista de inicio para ordenar la jornada comercial: rutina, tareas, foco semanal, OKR mensual, pipeline comercial y alertas operativas.</p>
         </div>
-        <span class="section-chip">Vista futura del CRM</span>
+        <div class="workday-hero__meta">
+          <span class="section-chip">Template visual</span>
+          <strong>Hoy</strong>
+        </div>
       </section>
 
-      <section class="workday-grid">
-        <article class="workday-card workday-card--primary">
+      <section class="operations-grid">
+        <article class="workday-card workday-card--routine">
           <div class="workday-card__header">
             <div>
-              <p class="panel-section__eyebrow">Hoy</p>
-              <h3>Checklist diario</h3>
+              <p class="panel-section__eyebrow">Rutina</p>
+              <h3>Mi rutina diaria</h3>
             </div>
-            <span class="daily-count">5 items</span>
+            <span class="daily-count">5 pasos</span>
           </div>
 
-          <div class="checklist">
-            <label class="checklist-item">
-              <input type="checkbox" disabled>
-              <span>
-                <strong>Revisar tareas vencidas</strong>
-                <small>Priorizar cuentas con próxima acción pendiente.</small>
-              </span>
-            </label>
-            <label class="checklist-item">
-              <input type="checkbox" disabled>
-              <span>
-                <strong>Contactar 3 prospectos</strong>
-                <small>Enfocar municipios con alta población o datos incompletos.</small>
-              </span>
-            </label>
-            <label class="checklist-item">
-              <input type="checkbox" disabled>
-              <span>
-                <strong>Validar contactos municipales</strong>
-                <small>Completar teléfono, cargo y canal preferido.</small>
-              </span>
-            </label>
-            <label class="checklist-item">
-              <input type="checkbox" disabled>
-              <span>
-                <strong>Revisar señales comerciales</strong>
-                <small>Noticias, cambios institucionales y falta de seguimiento.</small>
-              </span>
-            </label>
-            <label class="checklist-item">
-              <input type="checkbox" disabled>
-              <span>
-                <strong>Preparar próximas reuniones</strong>
-                <small>Revisar ficha, contacto, producto y objetivo.</small>
-              </span>
-            </label>
+          <div class="routine-list">
+            <div class="routine-item">
+              <span>08:30</span>
+              <strong>Revisar agenda y vencimientos</strong>
+              <p>Identificar cuentas que necesitan contacto durante el dia.</p>
+            </div>
+            <div class="routine-item">
+              <span>09:00</span>
+              <strong>Priorizar llamados</strong>
+              <p>Separar clientes, prospectos calientes y datos incompletos.</p>
+            </div>
+            <div class="routine-item">
+              <span>11:30</span>
+              <strong>Actualizar fichas</strong>
+              <p>Registrar estado comercial, proxima accion y notas.</p>
+            </div>
+            <div class="routine-item">
+              <span>15:00</span>
+              <strong>Preparar seguimiento</strong>
+              <p>Ordenar reuniones, propuestas y respuestas pendientes.</p>
+            </div>
+            <div class="routine-item">
+              <span>17:30</span>
+              <strong>Cierre del dia</strong>
+              <p>Dejar prioridades claras para la siguiente jornada.</p>
+            </div>
           </div>
         </article>
 
-        <article class="workday-card">
+        <article class="workday-card workday-card--today">
           <div class="workday-card__header">
             <div>
-              <p class="panel-section__eyebrow">Semana</p>
-              <h3>Foco semanal</h3>
+              <p class="panel-section__eyebrow">Hoy</p>
+              <h3>Tareas de hoy</h3>
             </div>
-            <span class="daily-count">Mock</span>
+            <span class="daily-count">6 tareas</span>
           </div>
 
           <div class="work-list">
             <div class="work-list-item">
-              <span class="daily-status daily-status--today">Prioridad</span>
-              <strong>Municipios sin próxima acción</strong>
-              <p>Reducir cuentas activas sin seguimiento definido.</p>
+              <span class="daily-status daily-status--late">Vencida</span>
+              <strong>Llamar municipios sin proxima accion</strong>
+              <p>Revisar clientes activos y prospectos con seguimiento abierto.</p>
             </div>
             <div class="work-list-item">
-              <span class="daily-status daily-status--signal">Exploración</span>
-              <strong>Prospectos por zona</strong>
-              <p>Comparar municipios por población, sección y sistema actual.</p>
+              <span class="daily-status daily-status--today">Hoy</span>
+              <strong>Validar contactos principales</strong>
+              <p>Completar telefono, cargo y canal preferido.</p>
             </div>
             <div class="work-list-item">
-              <span class="daily-status daily-status--signal">Datos</span>
-              <strong>Contactos incompletos</strong>
-              <p>Completar contacto principal antes de preparar reuniones.</p>
+              <span class="daily-status daily-status--signal">Seguimiento</span>
+              <strong>Preparar tres conversaciones comerciales</strong>
+              <p>Usar ficha, estado actual y oportunidad esperada.</p>
+            </div>
+          </div>
+        </article>
+
+        <article class="workday-card workday-card--week">
+          <div class="workday-card__header">
+            <div>
+              <p class="panel-section__eyebrow">Semana</p>
+              <h3>Esta semana</h3>
+            </div>
+            <span class="daily-count">Foco</span>
+          </div>
+
+          <div class="focus-strip">
+            <div>
+              <span>Prioridad</span>
+              <strong>Recuperar cuentas sin actividad</strong>
+            </div>
+            <div>
+              <span>Zona</span>
+              <strong>Interior bonaerense</strong>
+            </div>
+            <div>
+              <span>Meta</span>
+              <strong>12 contactos validados</strong>
+            </div>
+          </div>
+
+          <div class="work-list">
+            <div class="work-list-item">
+              <strong>Ordenar prospectos por prioridad comercial</strong>
+              <p>Separar alta, media y baja segun potencial y estado de contacto.</p>
+            </div>
+            <div class="work-list-item">
+              <strong>Revisar clientes con sistema actual desactualizado</strong>
+              <p>Detectar oportunidades de mejora o ampliacion.</p>
             </div>
           </div>
         </article>
@@ -114,7 +143,7 @@
           <div class="workday-card__header">
             <div>
               <p class="panel-section__eyebrow">Mes</p>
-              <h3>OKR comercial</h3>
+              <h3>OKR del mes</h3>
             </div>
             <span class="daily-count">Borrador</span>
           </div>
@@ -122,62 +151,82 @@
           <div class="okr-block">
             <div>
               <span>Objetivo</span>
-              <strong>Ordenar seguimiento comercial municipal</strong>
-              <p>Convertir municipios con datos dispersos en cuentas accionables.</p>
+              <strong>Convertir el mapa en una agenda comercial accionable</strong>
+              <p>Que cada municipio importante tenga estado, prioridad y proxima accion clara.</p>
             </div>
             <div class="okr-results">
               <div>
                 <span>KR1</span>
-                <strong>30 municipios con próxima acción</strong>
+                <strong>40 fichas revisadas</strong>
+                <small>Estado comercial actualizado</small>
               </div>
               <div>
                 <span>KR2</span>
-                <strong>20 contactos principales validados</strong>
+                <strong>25 proximas acciones</strong>
+                <small>Con fecha definida</small>
               </div>
               <div>
                 <span>KR3</span>
-                <strong>10 señales comerciales revisadas</strong>
+                <strong>15 conversaciones nuevas</strong>
+                <small>Prospectos o clientes activos</small>
               </div>
             </div>
           </div>
         </article>
 
-        <article class="workday-card">
+        <article class="workday-card workday-card--commercial">
           <div class="workday-card__header">
             <div>
-              <p class="panel-section__eyebrow">Contexto</p>
-              <h3>Señales para revisar</h3>
+              <p class="panel-section__eyebrow">Pipeline</p>
+              <h3>Comercial</h3>
             </div>
-            <span class="daily-count">4</span>
+            <span class="daily-count">Resumen</span>
           </div>
 
-          <div class="work-list">
-            <div class="work-list-item">
-              <span class="daily-status daily-status--signal">Noticia</span>
-              <strong>Cambio institucional</strong>
-              <p>Revisar autoridades y responsables de seguridad.</p>
+          <div class="commercial-summary">
+            <div>
+              <span>Clientes</span>
+              <strong>38</strong>
+              <p>Con seguimiento activo o datos cargados.</p>
             </div>
-            <div class="work-list-item">
-              <span class="daily-status daily-status--signal">Patrón</span>
-              <strong>Prospectos similares a clientes</strong>
-              <p>Validar si tienen sistema actual y contacto disponible.</p>
+            <div>
+              <span>Prospectos</span>
+              <strong>97</strong>
+              <p>Pendientes de priorizacion comercial.</p>
+            </div>
+            <div>
+              <span>Proximas acciones</span>
+              <strong>18</strong>
+              <p>Para ordenar en agenda semanal.</p>
             </div>
           </div>
         </article>
 
-        <article class="workday-card">
+        <article class="workday-card workday-card--alerts">
           <div class="workday-card__header">
             <div>
-              <p class="panel-section__eyebrow">Acciones</p>
-              <h3>Acciones rápidas</h3>
+              <p class="panel-section__eyebrow">Control</p>
+              <h3>Alertas</h3>
             </div>
-            <span class="daily-count">Próximamente</span>
+            <span class="daily-count">4 alertas</span>
           </div>
-          <div class="quick-actions">
-            <button type="button" disabled>Agregar próxima acción</button>
-            <button type="button" disabled>Crear tarea semanal</button>
-            <button type="button" disabled>Registrar avance OKR</button>
-            <button type="button" disabled>Revisar señales</button>
+
+          <div class="alert-list">
+            <div class="alert-item alert-item--urgent">
+              <span>Vencida</span>
+              <strong>Municipios con seguimiento atrasado</strong>
+              <p>Revisar cuentas con accion pendiente sin fecha reciente.</p>
+            </div>
+            <div class="alert-item">
+              <span>Datos</span>
+              <strong>Contactos sin telefono directo</strong>
+              <p>Completar antes de planificar llamados.</p>
+            </div>
+            <div class="alert-item">
+              <span>Oportunidad</span>
+              <strong>Prospectos similares a clientes actuales</strong>
+              <p>Marcar prioridad para exploracion comercial.</p>
+            </div>
           </div>
         </article>
       </section>
