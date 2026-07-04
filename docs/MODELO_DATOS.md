@@ -8,6 +8,20 @@ No describe implementacion tecnica, base de datos ni estructura de codigo. Su ob
 
 El municipio sigue siendo la entidad central del sistema, pero el producto ya no es solo un mapa. El mapa es una vista. El CRM debe permitir gestionar cuentas, contactos, productos, oportunidades, tareas, actividades, documentos, senales comerciales y seguimiento diario o semanal.
 
+## Alcance prioritario del modelo
+
+Aunque el modelo conceptual contempla varias entidades, el primer alcance real debe concentrarse en:
+
+- Municipio.
+- Estado comercial.
+- Próxima acción.
+- Contacto.
+- Producto contratado.
+- Señal comercial.
+- Usuario interno o responsable, solo en la medida necesaria para asignar trabajo.
+
+Las entidades de oportunidad, documento, actividad avanzada y pipeline completo quedan como soporte o evolución futura. No deben bloquear la primera versión útil.
+
 ## Principios del modelo
 
 - El municipio es la cuenta principal de trabajo.
@@ -122,6 +136,8 @@ Informacion sugerida:
 - sistema actual, si se conoce;
 - observaciones generales;
 - fecha de ultima actualizacion.
+- próxima acción.
+- fecha de próxima acción.
 
 Relaciones:
 
@@ -133,6 +149,8 @@ Relaciones:
 - Un municipio puede tener muchas senales comerciales.
 - Un municipio puede tener muchos documentos.
 - Un municipio puede tener un responsable comercial principal.
+- Un municipio debe tener una próxima acción cuando está activo comercialmente.
+- Un municipio puede tener señales comerciales automáticas.
 
 Datos editables:
 
@@ -449,6 +467,14 @@ Informacion sugerida:
 - usuario que la reviso;
 - observaciones.
 
+Tipos prioritarios:
+
+- noticias;
+- cambios institucionales;
+- falta de seguimiento;
+- patrones de datos;
+- oportunidades detectadas automáticamente.
+
 Relaciones:
 
 - Una senal puede estar asociada a un municipio.
@@ -695,12 +721,15 @@ Primero hay que consolidar:
 - producto;
 - producto contratado;
 - tarea;
-- actividad;
-- oportunidad;
 - usuario interno.
+- estado comercial;
+- próxima acción;
+- señal comercial.
 
 Luego se pueden fortalecer:
 
+- actividad;
+- oportunidad;
 - senales comerciales;
 - documentos;
 - vistas ejecutivas;

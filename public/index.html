@@ -18,14 +18,18 @@
         </div>
       </div>
       <div class="app-header__context">
-        <span class="app-header__pill app-header__pill--active">Mapa comercial</span>
-        <span class="app-header__pill">Trabajo diario</span>
-        <span class="app-header__pill">Oportunidades</span>
+        <a class="app-header__pill app-header__pill--active" href="index.html">Mapa comercial</a>
+        <a class="app-header__pill" href="trabajo-diario.html">Trabajo diario</a>
+        <span class="app-header__pill app-header__pill--disabled">Oportunidades · Próximamente</span>
       </div>
     </header>
 
     <main class="crm-layout">
       <aside class="left-sidebar" aria-label="Filtros y municipios">
+        <button class="section-toggle section-toggle--panel" type="button" data-collapse-target="left" aria-expanded="true">
+          Compactar
+        </button>
+
         <section class="panel-section panel-section--filters">
           <div class="panel-section__header">
             <p class="panel-section__eyebrow">Búsqueda</p>
@@ -90,6 +94,10 @@
       </section>
 
       <aside id="info-panel" class="detail-panel" aria-label="Ficha del municipio">
+        <button class="section-toggle section-toggle--panel" type="button" data-collapse-target="right" aria-expanded="true">
+          Compactar
+        </button>
+
         <div class="workspace-header">
           <div>
             <p class="panel-section__eyebrow">Cuenta</p>
@@ -110,6 +118,9 @@
           <h2>Trabajo diario</h2>
         </div>
         <span class="section-chip">Próximamente</span>
+        <button class="section-toggle section-toggle--bottom" type="button" data-collapse-target="bottom" aria-expanded="true">
+          Compactar
+        </button>
       </div>
 
       <div class="daily-grid">
@@ -200,5 +211,6 @@
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script type="module" src="../src/scripts/app.js"></script>
+  <script type="module" src="../src/scripts/layoutControls.js"></script>
 </body>
 </html>

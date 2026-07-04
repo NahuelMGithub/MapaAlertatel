@@ -32,6 +32,20 @@ La ficha debe servir para:
 - crear tareas;
 - detectar datos faltantes o desactualizados.
 
+## Prioridad actual de la ficha
+
+La ficha no debe intentar resolver todo el CRM desde el inicio.
+
+Primero debe permitir trabajar bien con:
+
+- Estado comercial claro.
+- Próxima acción obligatoria.
+- Contactos por municipio.
+- Productos contratados.
+- Señales comerciales automáticas.
+
+Los bloques de actividades, oportunidades, documentos, IA avanzada y pipeline deben quedar preparados como placeholders o evolución futura.
+
 ## Principio de diseno
 
 La ficha debe priorizar decision y accion.

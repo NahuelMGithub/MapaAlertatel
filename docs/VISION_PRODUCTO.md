@@ -20,6 +20,25 @@ La herramienta debe ayudar a responder preguntas concretas:
 
 El sistema debe convertirse en el lugar donde Alertatel mira su territorio comercial, organiza su seguimiento y toma mejores decisiones.
 
+## Dirección actual del producto
+
+La prioridad actual no es construir todo el CRM de golpe.
+
+El primer producto útil debe enfocarse en cinco capacidades:
+
+- Estado comercial claro por cuenta.
+- Próxima acción obligatoria.
+- Contactos por municipio.
+- Productos contratados.
+- Señales comerciales automáticas: noticias, cambios institucionales, falta de seguimiento, patrones de datos y oportunidades detectadas automáticamente.
+
+El sistema debe organizarse en dos modos principales:
+
+- Modo exploración: mapa, búsqueda de municipios, análisis de prospectos, comparación territorial y preparación de reuniones.
+- Modo ejecución: trabajo diario con checklist, trabajo semanal, trabajo mensual estilo OKR y seguimiento de tareas, avances y prioridades.
+
+Las ideas de CRM más amplias quedan como futuras hasta que estas capacidades funcionen bien.
+
 ## Vision del producto
 
 Construir un CRM comercial pensado especificamente para Alertatel, donde cada municipio u organismo tenga una ficha viva que combine datos institucionales, informacion comercial, historial de relacion, notas internas, tareas pendientes y senales de oportunidad.

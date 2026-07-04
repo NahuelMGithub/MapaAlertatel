@@ -14,6 +14,25 @@ El proyecto debe evolucionar sin romper lo que ya funciona.
 
 La prioridad es conservar el mapa, los filtros y la visualizacion actual mientras se ordena la estructura. Cada fase debe dejar una version funcional. Primero se mueve, separa y ordena; despues se mejora; recien mas adelante se cambia la fuente de datos.
 
+## 2.1 Prioridad actual
+
+No se va a construir todo el CRM de golpe.
+
+La prioridad de producto queda acotada a:
+
+- Estado comercial claro por cuenta.
+- Próxima acción obligatoria.
+- Contactos por municipio.
+- Productos contratados.
+- Señales comerciales automáticas.
+
+El sistema debe crecer alrededor de dos modos:
+
+- Modo exploración: mapa, búsqueda, análisis de prospectos, comparación territorial y preparación de reuniones.
+- Modo ejecución: trabajo diario, trabajo semanal, trabajo mensual estilo OKR y seguimiento de tareas, avances y prioridades.
+
+Las funciones como pipeline completo, agenda avanzada, documentos, dashboards ejecutivos complejos, permisos avanzados e IA generativa quedan para fases futuras.
+
 ## 3. Estado actual del sistema
 
 La app actual es una aplicacion web estatica basada en:
@@ -305,6 +324,15 @@ Objetivo: transformar el mapa en una herramienta de seguimiento comercial, no so
 
 La vista de tareas debe convivir con la vista de mapa, no reemplazarla. La Fase 0 debe haber dejado preparada la estructura para sumar `tasksView.js` sin mezclar tareas, mapa, filtros y tarjetas en un solo archivo.
 
+La prioridad de esta fase es construir el modo ejecución:
+
+- checklist diario;
+- revisión semanal;
+- revisión mensual estilo OKR;
+- tareas vencidas y pendientes;
+- avances por cuenta;
+- prioridades comerciales.
+
 Campos y funciones utiles:
 
 - Prioridad comercial:
@@ -357,13 +385,18 @@ Objetivo: sumar inteligencia y datos externos solo cuando la base interna ya est
 
 Ideas futuras:
 
-- Resumen automatico de cada municipio.
+- Señales comerciales automáticas por noticias.
+- Señales por cambios institucionales.
+- Señales por falta de seguimiento.
+- Señales por patrones de datos.
+- Oportunidades detectadas automáticamente.
+- Resumen automático de cada municipio.
 - Sugerencia de prioridad comercial.
-- Deteccion de municipios parecidos a clientes actuales.
-- Generacion de notas o mensajes comerciales.
-- Enriquecimiento con datos publicos.
+- Detección de municipios parecidos a clientes actuales.
+- Generación de notas o mensajes comerciales.
+- Enriquecimiento con datos públicos.
 - Alertas por cambios de intendente, web municipal o noticias relevantes.
-- Analisis de oportunidades por poblacion, zona, partido politico, sistema actual y comportamiento historico.
+- Análisis de oportunidades por población, zona, partido político, sistema actual y comportamiento histórico.
 
 Esta fase debe esperar hasta que:
 

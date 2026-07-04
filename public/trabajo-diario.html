@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trabajo diario - Alertatel CRM Comercial</title>
+  <link rel="stylesheet" href="../src/styles/main.css">
+</head>
+<body>
+  <div class="app-shell app-shell--daily-page">
+    <header class="app-header">
+      <div class="app-header__brand">
+        <div class="app-logo">A</div>
+        <div>
+          <p class="app-header__eyebrow">Alertatel</p>
+          <h1>CRM Comercial</h1>
+        </div>
+      </div>
+      <div class="app-header__context">
+        <a class="app-header__pill" href="index.html">Mapa comercial</a>
+        <a class="app-header__pill app-header__pill--active" href="trabajo-diario.html">Trabajo diario</a>
+        <span class="app-header__pill app-header__pill--disabled">Oportunidades · Próximamente</span>
+      </div>
+    </header>
+
+    <main class="workday-page" aria-label="Trabajo diario">
+      <section class="workday-hero">
+        <div>
+          <p class="panel-section__eyebrow">Modo ejecución</p>
+          <h2>Trabajo diario</h2>
+          <p>Checklist operativo para ordenar llamadas, seguimiento y prioridades comerciales. Datos hardcodeados hasta implementar la base local.</p>
+        </div>
+        <span class="section-chip">Vista futura del CRM</span>
+      </section>
+
+      <section class="workday-grid">
+        <article class="workday-card workday-card--primary">
+          <div class="workday-card__header">
+            <div>
+              <p class="panel-section__eyebrow">Hoy</p>
+              <h3>Checklist diario</h3>
+            </div>
+            <span class="daily-count">5 items</span>
+          </div>
+
+          <div class="checklist">
+            <label class="checklist-item">
+              <input type="checkbox" disabled>
+              <span>
+                <strong>Revisar tareas vencidas</strong>
+                <small>Priorizar cuentas con próxima acción pendiente.</small>
+              </span>
+            </label>
+            <label class="checklist-item">
+              <input type="checkbox" disabled>
+              <span>
+                <strong>Contactar 3 prospectos</strong>
+                <small>Enfocar municipios con alta población o datos incompletos.</small>
+              </span>
+            </label>
+            <label class="checklist-item">
+              <input type="checkbox" disabled>
+              <span>
+                <strong>Validar contactos municipales</strong>
+                <small>Completar teléfono, cargo y canal preferido.</small>
+              </span>
+            </label>
+            <label class="checklist-item">
+              <input type="checkbox" disabled>
+              <span>
+                <strong>Revisar señales comerciales</strong>
+                <small>Noticias, cambios institucionales y falta de seguimiento.</small>
+              </span>
+            </label>
+            <label class="checklist-item">
+              <input type="checkbox" disabled>
+              <span>
+                <strong>Preparar próximas reuniones</strong>
+                <small>Revisar ficha, contacto, producto y objetivo.</small>
+              </span>
+            </label>
+          </div>
+        </article>
+
+        <article class="workday-card">
+          <div class="workday-card__header">
+            <div>
+              <p class="panel-section__eyebrow">Semana</p>
+              <h3>Foco semanal</h3>
+            </div>
+            <span class="daily-count">Mock</span>
+          </div>
+
+          <div class="work-list">
+            <div class="work-list-item">
+              <span class="daily-status daily-status--today">Prioridad</span>
+              <strong>Municipios sin próxima acción</strong>
+              <p>Reducir cuentas activas sin seguimiento definido.</p>
+            </div>
+            <div class="work-list-item">
+              <span class="daily-status daily-status--signal">Exploración</span>
+              <strong>Prospectos por zona</strong>
+              <p>Comparar municipios por población, sección y sistema actual.</p>
+            </div>
+            <div class="work-list-item">
+              <span class="daily-status daily-status--signal">Datos</span>
+              <strong>Contactos incompletos</strong>
+              <p>Completar contacto principal antes de preparar reuniones.</p>
+            </div>
+          </div>
+        </article>
+
+        <article class="workday-card workday-card--okr">
+          <div class="workday-card__header">
+            <div>
+              <p class="panel-section__eyebrow">Mes</p>
+              <h3>OKR comercial</h3>
+            </div>
+            <span class="daily-count">Borrador</span>
+          </div>
+
+          <div class="okr-block">
+            <div>
+              <span>Objetivo</span>
+              <strong>Ordenar seguimiento comercial municipal</strong>
+              <p>Convertir municipios con datos dispersos en cuentas accionables.</p>
+            </div>
+            <div class="okr-results">
+              <div>
+                <span>KR1</span>
+                <strong>30 municipios con próxima acción</strong>
+              </div>
+              <div>
+                <span>KR2</span>
+                <strong>20 contactos principales validados</strong>
+              </div>
+              <div>
+                <span>KR3</span>
+                <strong>10 señales comerciales revisadas</strong>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="workday-card">
+          <div class="workday-card__header">
+            <div>
+              <p class="panel-section__eyebrow">Contexto</p>
+              <h3>Señales para revisar</h3>
+            </div>
+            <span class="daily-count">4</span>
+          </div>
+
+          <div class="work-list">
+            <div class="work-list-item">
+              <span class="daily-status daily-status--signal">Noticia</span>
+              <strong>Cambio institucional</strong>
+              <p>Revisar autoridades y responsables de seguridad.</p>
+            </div>
+            <div class="work-list-item">
+              <span class="daily-status daily-status--signal">Patrón</span>
+              <strong>Prospectos similares a clientes</strong>
+              <p>Validar si tienen sistema actual y contacto disponible.</p>
+            </div>
+          </div>
+        </article>
+
+        <article class="workday-card">
+          <div class="workday-card__header">
+            <div>
+              <p class="panel-section__eyebrow">Acciones</p>
+              <h3>Acciones rápidas</h3>
+            </div>
+            <span class="daily-count">Próximamente</span>
+          </div>
+          <div class="quick-actions">
+            <button type="button" disabled>Agregar próxima acción</button>
+            <button type="button" disabled>Crear tarea semanal</button>
+            <button type="button" disabled>Registrar avance OKR</button>
+            <button type="button" disabled>Revisar señales</button>
+          </div>
+        </article>
+      </section>
+    </main>
+  </div>
+</body>
+</html>
