@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const { openDb } = require("./db");
 const municipiosRouter = require("./routes/municipios");
+const trabajoRouter = require("./routes/trabajo");
 
 function createApp(db = openDb()) {
   const app = express();
@@ -14,6 +15,7 @@ function createApp(db = openDb()) {
   });
 
   app.use("/api/municipios", municipiosRouter(db));
+  app.use("/api/trabajo", trabajoRouter(db));
 
   app.use((req, res) => {
     res.status(404).json({ error: "Endpoint no encontrado", path: req.path });
