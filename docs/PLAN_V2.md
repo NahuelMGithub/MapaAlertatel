@@ -327,11 +327,23 @@ La vista de tareas debe convivir con la vista de mapa, no reemplazarla. La Fase 
 La prioridad de esta fase es construir el modo ejecución:
 
 - checklist diario;
-- revisión semanal;
 - revisión mensual estilo OKR;
 - tareas vencidas y pendientes;
 - avances por cuenta;
 - prioridades comerciales.
+
+Avance implementado:
+
+- Se agrego la pantalla `Trabajo diario` como vista separada del mapa.
+- Se implemento ritual diario con checklist y persistencia via backend local.
+- Se implementaron tareas de hoy con creacion, prioridad, completado y tareas vencidas.
+- Se quito la tarjeta de trabajo semanal para dejar la vista enfocada en diario + OKR mensual.
+- Se ajusto `Tareas de hoy` para tener el mismo alto visual que `Mi rutina diaria`.
+- Se agrego scroll interno en la lista de tareas para que muchas tareas no empujen el OKR ni el pipeline.
+- Las tareas completadas se muestran al fondo de la lista.
+- Las tareas completadas pueden reactivarse desde un boton `Reactivar`.
+- Se dejo visible el bloque de OKR mensual como eje de trabajo de mediano plazo.
+- En `Mapa comercial`, los filtros de poblacion, partido y seccion electoral quedaron bajo un boton `Mas filtros`.
 
 Campos y funciones utiles:
 

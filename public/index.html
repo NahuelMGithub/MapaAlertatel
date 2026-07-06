@@ -47,22 +47,28 @@
             <label for="nombre-filter">Nombre</label>
             <input type="text" id="nombre-filter" placeholder="Buscar municipio...">
 
-            <div class="filter-row">
-              <div>
-                <label for="pob-min">Población mínima</label>
-                <input type="number" id="pob-min" placeholder="10000">
+            <button class="advanced-filters-toggle" type="button" id="advanced-filters-toggle" aria-expanded="false" aria-controls="advanced-filters">
+              Mas filtros
+            </button>
+
+            <div class="advanced-filters" id="advanced-filters" hidden>
+              <div class="filter-row">
+                <div>
+                  <label for="pob-min">Población mínima</label>
+                  <input type="number" id="pob-min" placeholder="10000">
+                </div>
+                <div>
+                  <label for="pob-max">Población máxima</label>
+                  <input type="number" id="pob-max" placeholder="50000">
+                </div>
               </div>
-              <div>
-                <label for="pob-max">Población máxima</label>
-                <input type="number" id="pob-max" placeholder="50000">
-              </div>
+
+              <label for="politico-filter">Partido</label>
+              <input type="text" id="politico-filter" placeholder="Ej: LLA">
+
+              <label for="seccionelectoral-filter">Sección electoral</label>
+              <input type="text" id="seccionelectoral-filter" placeholder="Ej: 7.a">
             </div>
-
-            <label for="politico-filter">Partido político</label>
-            <input type="text" id="politico-filter" placeholder="Ej: LLA">
-
-            <label for="seccionelectoral-filter">Sección electoral</label>
-            <input type="text" id="seccionelectoral-filter" placeholder="Ej: 7.a">
 
             <button id="apply-filters">Filtrar municipios</button>
           </div>

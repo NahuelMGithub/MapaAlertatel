@@ -9,6 +9,8 @@ const elements = {
   nombreFilter: document.getElementById("nombre-filter"),
   pobMinInput: document.getElementById("pob-min"),
   pobMaxInput: document.getElementById("pob-max"),
+  advancedFilters: document.getElementById("advanced-filters"),
+  advancedFiltersToggle: document.getElementById("advanced-filters-toggle"),
   applyFiltersBtn: document.getElementById("apply-filters"),
   politicoFilter: document.getElementById("politico-filter"),
   seccionelectoralFilter: document.getElementById("seccionelectoral-filter"),

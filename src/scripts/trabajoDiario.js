@@ -1,6 +1,8 @@
 const API_BASE_URL = globalThis.ALERTATEL_API_BASE_URL || "http://localhost:3001/api";
 
 const elements = {
+  routineCard: document.querySelector(".workday-card--routine"),
+  todayCard: document.querySelector(".workday-card--today"),
   currentDate: document.getElementById("workday-current-date"),
   ritualCount: document.getElementById("ritual-count"),
   ritualList: document.getElementById("ritual-list"),
@@ -88,7 +90,7 @@ function priorityLabel(prioridad) {
 
 function priorityClass(prioridad) {
   if (prioridad === "alta") {
-    return "daily-status--late";
+    return "daily-status--urgent";
   }
 
   if (prioridad === "baja") {
@@ -96,6 +98,18 @@ function priorityClass(prioridad) {
   }
 
   return "daily-status--today";
+}
+
+function taskDateBadge(task) {
+  if (task.estado === "completada") {
+    return `<span class="daily-status daily-status--done">Completada</span>`;
+  }
+
+  if (task.fecha < state.fecha) {
+    return `<span class="daily-status daily-status--late">Vencida ${escapeHtml(task.fecha)}</span>`;
+  }
+
+  return "";
 }
 
 function renderRitual() {
@@ -134,17 +148,25 @@ function renderTasks() {
     return;
   }
 
-  elements.tasksList.innerHTML = state.tareas
+  const sortedTasks = [...state.tareas].sort((a, b) => {
+    if (a.estado === b.estado) return 0;
+    return a.estado === "completada" ? 1 : -1;
+  });
+
+  elements.tasksList.innerHTML = sortedTasks
     .map(
       (task) => `
         <div class="work-list-item task-list-item ${task.estado === "completada" ? "task-list-item--done" : ""}">
           <div class="task-list-item__main">
-            <span class="daily-status ${priorityClass(task.prioridad)}">${priorityLabel(task.prioridad)}</span>
+            <div class="task-list-item__badges">
+              ${taskDateBadge(task)}
+              <span class="daily-status ${priorityClass(task.prioridad)}">${priorityLabel(task.prioridad)}</span>
+            </div>
             <strong>${escapeHtml(task.titulo)}</strong>
             ${task.descripcion ? `<p>${escapeHtml(task.descripcion)}</p>` : ""}
           </div>
-          <button class="secondary-action" type="button" data-task-id="${task.id}" ${task.estado === "completada" ? "disabled" : ""}>
-            ${task.estado === "completada" ? "Completada" : "Completar"}
+          <button class="secondary-action task-list-item__action" type="button" data-task-id="${task.id}" data-task-completed="${task.estado === "completada"}">
+            ${task.estado === "completada" ? "Reactivar" : "Completar"}
           </button>
         </div>
       `
@@ -191,18 +213,33 @@ async function handleRitualCheck(checkbox) {
 
 async function handleTaskCheck(button) {
   const taskId = button.dataset.taskId;
+  const completado = button.dataset.taskCompleted !== "true";
   button.disabled = true;
   setError(elements.tasksError, null);
 
   try {
     await apiSend(`/trabajo/tareas/${encodeURIComponent(taskId)}/check`, "PATCH", {
-      completado: true
+      fecha: state.fecha,
+      completado
     });
     await loadTasks();
   } catch (error) {
     setError(elements.tasksError, error);
     button.disabled = false;
   }
+}
+
+function setupTodayHeightSync() {
+  if (!elements.routineCard || !elements.todayCard || !("ResizeObserver" in window)) return;
+
+  const syncHeight = () => {
+    elements.todayCard.style.setProperty("--today-card-height", `${elements.routineCard.offsetHeight}px`);
+  };
+
+  const observer = new ResizeObserver(syncHeight);
+  observer.observe(elements.routineCard);
+  window.addEventListener("resize", syncHeight);
+  syncHeight();
 }
 
 async function handleTaskCreate(event) {
@@ -267,6 +304,7 @@ async function init() {
   elements.currentDate.textContent = state.fecha;
   elements.taskForm.addEventListener("submit", handleTaskCreate);
   setupHelpModal();
+  setupTodayHeightSync();
   setLoading();
 
   const results = await Promise.allSettled([loadRitual(), loadTasks()]);

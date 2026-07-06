@@ -27,6 +27,14 @@ export function aplicarFiltros(municipiosData, filters) {
 }
 
 export function setupFilters(elements, municipiosData, onFiltered) {
+  elements.advancedFiltersToggle?.addEventListener("click", () => {
+    const isExpanded = elements.advancedFiltersToggle.getAttribute("aria-expanded") === "true";
+
+    elements.advancedFilters.hidden = isExpanded;
+    elements.advancedFiltersToggle.setAttribute("aria-expanded", String(!isExpanded));
+    elements.advancedFiltersToggle.textContent = isExpanded ? "Mas filtros" : "Menos filtros";
+  });
+
   elements.applyFiltersBtn.addEventListener("click", () => {
     const filters = getFilterValues(elements);
     const filtrados = aplicarFiltros(municipiosData, filters);

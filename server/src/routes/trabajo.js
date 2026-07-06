@@ -259,6 +259,10 @@ function getTaskById(db, id) {
   return db.prepare("SELECT * FROM trabajo_tareas WHERE id = ?").get(id);
 }
 
+function completionTimestampForDate(fecha) {
+  return `${fecha}T${new Date().toISOString().slice(11)}`;
+}
+
 module.exports = function trabajoRouter(db) {
   const router = express.Router();
 
@@ -407,13 +411,18 @@ module.exports = function trabajoRouter(db) {
       .prepare(
         `SELECT *
          FROM trabajo_tareas
-         WHERE fecha = ?
-           AND NOT (estado = 'completada' AND completada_at IS NOT NULL AND substr(completada_at, 1, 10) < ?)
+         WHERE (estado = 'pendiente' AND fecha <= ?)
+            OR (estado = 'completada' AND (
+              fecha = ?
+              OR (completada_at IS NOT NULL AND substr(completada_at, 1, 10) = ?)
+            ))
          ORDER BY
+           CASE WHEN fecha < ? AND estado = 'pendiente' THEN 0 ELSE 1 END,
+           fecha ASC,
            CASE prioridad WHEN 'alta' THEN 1 WHEN 'media' THEN 2 ELSE 3 END,
            id ASC`
       )
-      .all(dateResult.fecha, dateResult.fecha);
+      .all(dateResult.fecha, dateResult.fecha, dateResult.fecha, dateResult.fecha);
 
     res.json({
       fecha: dateResult.fecha,
@@ -429,7 +438,9 @@ module.exports = function trabajoRouter(db) {
       return;
     }
 
-    const completadaAt = validation.payload.estado === "completada" ? new Date().toISOString() : null;
+    const completadaAt = validation.payload.estado === "completada"
+      ? completionTimestampForDate(validation.payload.fecha)
+      : null;
     const result = db
       .prepare(
         `INSERT INTO trabajo_tareas (titulo, descripcion, fecha, estado, prioridad, completada_at, updated_at)
@@ -473,7 +484,7 @@ module.exports = function trabajoRouter(db) {
     let completadaAt = current.completada_at;
 
     if (next.estado === "completada" && current.estado !== "completada") {
-      completadaAt = new Date().toISOString();
+      completadaAt = completionTimestampForDate(next.fecha);
     }
 
     if (next.estado === "pendiente") {
@@ -505,7 +516,7 @@ module.exports = function trabajoRouter(db) {
     }
 
     const estado = validation.payload.completado ? "completada" : "pendiente";
-    const completadaAt = validation.payload.completado ? new Date().toISOString() : null;
+    const completadaAt = validation.payload.completado ? completionTimestampForDate(validation.payload.fecha) : null;
 
     db.prepare(
       `UPDATE trabajo_tareas
