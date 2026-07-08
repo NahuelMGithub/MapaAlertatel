@@ -6,7 +6,11 @@ const COMMERCIAL_FIELDS = [
   "fecha_proxima_accion",
   "notas",
   "prioridad",
-  "sistema_actual"
+  "sistema_actual",
+  "clasificacion",
+  "subclasificacion",
+  "servicio",
+  "ojos_en_alerta"
 ];
 
 const FIELD_LIMITS = {
@@ -15,7 +19,10 @@ const FIELD_LIMITS = {
   fecha_proxima_accion: 10,
   notas: 5000,
   prioridad: 50,
-  sistema_actual: 200
+  sistema_actual: 200,
+  clasificacion: 20,
+  subclasificacion: 40,
+  servicio: 200
 };
 
 function parseRawMunicipio(row) {
@@ -46,6 +53,10 @@ function parseMunicipioWithComercial(row) {
     notas: row.notas,
     prioridad: row.prioridad,
     sistema_actual: row.sistema_actual,
+    clasificacion: row.clasificacion,
+    subclasificacion: row.subclasificacion,
+    servicio: row.servicio,
+    ojos_en_alerta: row.ojos_en_alerta === null ? null : Boolean(row.ojos_en_alerta),
     created_at: row.comercial_created_at,
     updated_at: row.comercial_updated_at
   };
@@ -76,6 +87,18 @@ function normalizeTextField(value, field) {
   return normalized || null;
 }
 
+function normalizeBooleanField(value, field) {
+  if (value === undefined || value === null) {
+    return value;
+  }
+
+  if (typeof value !== "boolean") {
+    throw new Error(`${field} debe ser booleano o null`);
+  }
+
+  return value;
+}
+
 function isValidDateOnly(value) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
     return false;
@@ -100,7 +123,10 @@ function validateCommercialPayload(body) {
 
   try {
     for (const field of COMMERCIAL_FIELDS) {
-      payload[field] = normalizeTextField(body[field], field);
+      payload[field] =
+        field === "ojos_en_alerta"
+          ? normalizeBooleanField(body[field], field)
+          : normalizeTextField(body[field], field);
     }
   } catch (error) {
     return { error: error.message };
@@ -112,6 +138,14 @@ function validateCommercialPayload(body) {
 
   if (payload.fecha_proxima_accion && !isValidDateOnly(payload.fecha_proxima_accion)) {
     return { error: "fecha_proxima_accion debe tener formato YYYY-MM-DD" };
+  }
+
+  if (payload.clasificacion && !["Cliente", "No cliente"].includes(payload.clasificacion)) {
+    return { error: "clasificacion debe ser Cliente, No cliente o null" };
+  }
+
+  if (payload.subclasificacion && payload.subclasificacion !== "Prospecto") {
+    return { error: "subclasificacion debe ser Prospecto o null" };
   }
 
   return { payload };
@@ -153,6 +187,10 @@ module.exports = function municipiosRouter(db) {
            mc.notas,
            mc.prioridad,
            mc.sistema_actual,
+           mc.clasificacion,
+           mc.subclasificacion,
+           mc.servicio,
+           mc.ojos_en_alerta,
            mc.created_at AS comercial_created_at,
            mc.updated_at AS comercial_updated_at
          FROM municipios m
@@ -189,7 +227,7 @@ module.exports = function municipiosRouter(db) {
     const next = {};
 
     for (const field of COMMERCIAL_FIELDS) {
-      next[field] = validation.payload[field] === undefined ? current[field] || null : validation.payload[field];
+      next[field] = validation.payload[field] === undefined ? current[field] ?? null : validation.payload[field];
     }
 
     db.prepare(
@@ -201,9 +239,13 @@ module.exports = function municipiosRouter(db) {
          notas,
          prioridad,
          sistema_actual,
+         clasificacion,
+         subclasificacion,
+         servicio,
+         ojos_en_alerta,
          updated_at
        )
-       VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
        ON CONFLICT(municipio_id) DO UPDATE SET
          estado_comercial = excluded.estado_comercial,
          proxima_accion = excluded.proxima_accion,
@@ -211,6 +253,10 @@ module.exports = function municipiosRouter(db) {
          notas = excluded.notas,
          prioridad = excluded.prioridad,
          sistema_actual = excluded.sistema_actual,
+         clasificacion = excluded.clasificacion,
+         subclasificacion = excluded.subclasificacion,
+         servicio = excluded.servicio,
+         ojos_en_alerta = excluded.ojos_en_alerta,
          updated_at = CURRENT_TIMESTAMP`
     ).run(
       req.params.id,
@@ -219,7 +265,11 @@ module.exports = function municipiosRouter(db) {
       next.fecha_proxima_accion,
       next.notas,
       next.prioridad,
-      next.sistema_actual
+      next.sistema_actual,
+      next.clasificacion,
+      next.subclasificacion,
+      next.servicio,
+      next.ojos_en_alerta === null ? null : Number(next.ojos_en_alerta)
     );
 
     const row = db
@@ -232,6 +282,10 @@ module.exports = function municipiosRouter(db) {
            notas,
            prioridad,
            sistema_actual,
+           clasificacion,
+           subclasificacion,
+           servicio,
+           ojos_en_alerta,
            created_at,
            updated_at
          FROM municipio_comercial

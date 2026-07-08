@@ -85,7 +85,7 @@ function currentMainContact(m) {
 }
 
 function currentProducts(m) {
-  const system = valueOrDash(m.comercial?.sistema_actual || m.sistema);
+  const system = valueOrDash(m.comercial?.servicio || m.comercial?.sistema_actual || m.sistema);
   const buttons = valueOrDash(m["Cantidad de botones"]);
 
   if (system === "-" && buttons === "-") {
@@ -97,6 +97,22 @@ function currentProducts(m) {
   }
 
   return `${system} - ${buttons} botones`;
+}
+
+function yesNoOrDash(value) {
+  if (value === true) {
+    return "Sí";
+  }
+
+  if (value === false) {
+    return "No";
+  }
+
+  return "-";
+}
+
+function selectedValue(current, value) {
+  return current === value ? "selected" : "";
 }
 
 function renderCommercialView(m) {
@@ -123,8 +139,20 @@ function renderCommercialView(m) {
         <strong>${escapeHtml(currentMainContact(m))}</strong>
       </div>
       <div class="tracking-item">
-        <span>Productos / sistema actual</span>
+        <span>Servicio</span>
         <strong>${escapeHtml(currentProducts(m))}</strong>
+      </div>
+      <div class="tracking-item">
+        <span>Clasificación</span>
+        <strong>${escapeHtml(valueOrDash(m.comercial?.clasificacion))}</strong>
+      </div>
+      <div class="tracking-item">
+        <span>Subclasificación</span>
+        <strong>${escapeHtml(valueOrDash(m.comercial?.subclasificacion))}</strong>
+      </div>
+      <div class="tracking-item">
+        <span>Ojos en Alerta</span>
+        <strong>${escapeHtml(yesNoOrDash(m.comercial?.ojos_en_alerta))}</strong>
       </div>
       <div class="tracking-item tracking-item--wide">
         <span>Notas</span>
@@ -147,6 +175,41 @@ function renderCommercialForm(m, options) {
       ${options.error ? `<div class="form-error">${escapeHtml(options.error.message)}</div>` : ""}
 
       <div class="form-grid">
+        <label>
+          <span>Clasificación</span>
+          <select name="clasificacion" ${disabled}>
+            <option value="">Sin clasificar</option>
+            <option value="Cliente" ${selectedValue(comercial.clasificacion, "Cliente")}>Cliente</option>
+            <option value="No cliente" ${selectedValue(comercial.clasificacion, "No cliente")}>No cliente</option>
+          </select>
+        </label>
+
+        <label>
+          <span>Subclasificación</span>
+          <select name="subclasificacion" ${disabled}>
+            <option value="">Sin subclasificación</option>
+            <option value="Prospecto" ${selectedValue(comercial.subclasificacion, "Prospecto")}>Prospecto</option>
+          </select>
+        </label>
+
+        <label>
+          <span>Servicio</span>
+          <input name="servicio" type="text" list="service-options" value="${escapeHtml(comercial.servicio)}" placeholder="Ej: Alertatel o SoftGuard" ${disabled}>
+          <datalist id="service-options">
+            <option value="Alertatel"></option>
+            <option value="SoftGuard"></option>
+          </datalist>
+        </label>
+
+        <label>
+          <span>Ojos en Alerta</span>
+          <select name="ojos_en_alerta" ${disabled}>
+            <option value="" ${selectedValue(comercial.ojos_en_alerta, null)}>Sin informar</option>
+            <option value="true" ${selectedValue(comercial.ojos_en_alerta, true)}>Sí</option>
+            <option value="false" ${selectedValue(comercial.ojos_en_alerta, false)}>No</option>
+          </select>
+        </label>
+
         <label>
           <span>Estado comercial</span>
           <input name="estado_comercial" type="text" value="${escapeHtml(comercial.estado_comercial)}" placeholder="Ej: contacto iniciado" ${disabled}>
@@ -197,10 +260,116 @@ function collectCommercialPayload(form) {
 
   for (const [key, value] of formData.entries()) {
     const text = String(value).trim();
-    payload[key] = text === "" ? null : text;
+    payload[key] =
+      key === "ojos_en_alerta"
+        ? text === "" ? null : text === "true"
+        : text === "" ? null : text;
   }
 
   return payload;
+}
+
+function taskPriorityLabel(prioridad) {
+  const labels = {
+    alta: "Alta",
+    media: "Media",
+    baja: "Baja"
+  };
+
+  return labels[prioridad] || "Media";
+}
+
+function taskStatusLabel(task) {
+  if (task.estado === "completada") {
+    return "Realizada";
+  }
+
+  return task.fecha && task.fecha < new Date().toISOString().slice(0, 10) ? "Vencida" : "Pendiente";
+}
+
+function renderTaskList(tasks, emptyText) {
+  if (!tasks.length) {
+    return `<div class="municipality-task-empty">${escapeHtml(emptyText)}</div>`;
+  }
+
+  return tasks
+    .map(
+      (task) => `
+        <div class="municipality-task ${task.estado === "completada" ? "municipality-task--done" : ""}">
+          <div class="municipality-task__main">
+            <div class="municipality-task__meta">
+              <span>${escapeHtml(taskStatusLabel(task))}</span>
+              <span>${escapeHtml(taskPriorityLabel(task.prioridad))}</span>
+              <span>${escapeHtml(valueOrDash(task.fecha))}</span>
+            </div>
+            <strong>${escapeHtml(task.titulo)}</strong>
+            ${task.descripcion ? `<p>${escapeHtml(task.descripcion)}</p>` : ""}
+          </div>
+          <button class="secondary-action" type="button" data-municipality-task-id="${escapeHtml(task.id)}" data-task-completed="${task.estado === "completada"}">
+            ${task.estado === "completada" ? "Reactivar" : "Completar"}
+          </button>
+        </div>
+      `
+    )
+    .join("");
+}
+
+function renderMunicipalityTasks(tasks, options) {
+  const pendingTasks = tasks.filter((task) => task.estado !== "completada");
+  const completedTasks = tasks.filter((task) => task.estado === "completada");
+
+  return `
+    <form class="municipality-task-form" id="municipality-task-form">
+      ${options.taskError ? `<div class="form-error">${escapeHtml(options.taskError.message)}</div>` : ""}
+      <label class="municipality-task-form__title">
+        <span>Tarea</span>
+        <input name="titulo" type="text" placeholder="Nueva tarea para este municipio" required>
+      </label>
+      <label>
+        <span>Fecha</span>
+        <input name="fecha" type="date" value="${escapeHtml(new Date().toISOString().slice(0, 10))}">
+      </label>
+      <label>
+        <span>Prioridad</span>
+        <select name="prioridad">
+          <option value="media">Media</option>
+          <option value="alta">Alta</option>
+          <option value="baja">Baja</option>
+        </select>
+      </label>
+      <label class="municipality-task-form__description">
+        <span>Descripcion</span>
+        <input name="descripcion" type="text" placeholder="Detalle opcional">
+      </label>
+      <button class="primary-action" type="submit">Agregar tarea</button>
+    </form>
+
+    <div class="municipality-task-columns">
+      <div>
+        <h4>Por realizar</h4>
+        <div class="municipality-task-list">
+          ${renderTaskList(pendingTasks, "No hay tareas pendientes para este municipio.")}
+        </div>
+      </div>
+      <div>
+        <h4>Realizadas</h4>
+        <div class="municipality-task-list">
+          ${renderTaskList(completedTasks, "No hay tareas realizadas para este municipio.")}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function collectTaskPayload(form) {
+  const formData = new FormData(form);
+
+  return {
+    titulo: String(formData.get("titulo") || "").trim(),
+    descripcion: String(formData.get("descripcion") || "").trim() || null,
+    fecha: String(formData.get("fecha") || "").trim() || new Date().toISOString().slice(0, 10),
+    prioridad: String(formData.get("prioridad") || "media")
+  };
 }
 
 export function renderInfoPanel(infoContent, m, options = {}) {
@@ -208,9 +377,13 @@ export function renderInfoPanel(infoContent, m, options = {}) {
     mode: "view",
     isSaving: false,
     error: null,
+    taskError: null,
+    tasks: [],
     onEdit: null,
     onCancel: null,
     onSave: null,
+    onTaskCreate: null,
+    onTaskToggle: null,
     ...options
   };
   const isEditing = renderOptions.mode === "edit";
@@ -260,8 +433,8 @@ export function renderInfoPanel(infoContent, m, options = {}) {
             <strong>${escapeHtml(moneyOrDash(m.Pagan))}</strong>
           </div>
           <div class="metric-card">
-            <span>Poseen sistema</span>
-            <strong>${escapeHtml(valueOrDash(m.comercial?.sistema_actual || m.sistema))}</strong>
+            <span>Servicio</span>
+            <strong>${escapeHtml(valueOrDash(m.comercial?.servicio || m.comercial?.sistema_actual || m.sistema))}</strong>
           </div>
           <div class="metric-card">
             <span>Fecha inicio</span>
@@ -321,29 +494,14 @@ export function renderInfoPanel(infoContent, m, options = {}) {
       </section>
 
       <section class="municipality-card__section">
-        <h3>Trabajo comercial pendiente</h3>
-        <div class="placeholder-grid">
-          <div class="placeholder-card">
-            <span>Tareas</span>
-            <strong>Sin tareas registradas</strong>
-            <button type="button" disabled>Agregar tarea</button>
+        <div class="section-title-row">
+          <div>
+            <p class="municipality-card__eyebrow">Tareas vinculadas</p>
+            <h3>Trabajo comercial pendiente</h3>
           </div>
-          <div class="placeholder-card">
-            <span>Actividades</span>
-            <strong>Sin actividades registradas</strong>
-            <button type="button" disabled>Ver historial</button>
-          </div>
-          <div class="placeholder-card">
-            <span>Oportunidades</span>
-            <strong>Sin oportunidades estructuradas</strong>
-            <button type="button" disabled>Crear oportunidad</button>
-          </div>
-          <div class="placeholder-card">
-            <span>IA y senales</span>
-            <strong>Sin senales comerciales disponibles</strong>
-            <button type="button" disabled>Analizar municipio</button>
-          </div>
+          <span class="section-chip">${escapeHtml(String(renderOptions.tasks.length))} tareas</span>
         </div>
+        ${renderMunicipalityTasks(renderOptions.tasks, renderOptions)}
       </section>
     </article>
   `;
@@ -358,6 +516,18 @@ export function renderInfoPanel(infoContent, m, options = {}) {
   form?.addEventListener("submit", (event) => {
     event.preventDefault();
     renderOptions.onSave?.(collectCommercialPayload(form));
+  });
+
+  const taskForm = infoContent.querySelector("#municipality-task-form");
+  taskForm?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    renderOptions.onTaskCreate?.(collectTaskPayload(taskForm));
+  });
+
+  infoContent.querySelectorAll("[data-municipality-task-id]").forEach((button) => {
+    button.addEventListener("click", () => {
+      renderOptions.onTaskToggle?.(button.dataset.municipalityTaskId, button.dataset.taskCompleted !== "true");
+    });
   });
 }
 

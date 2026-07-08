@@ -7,6 +7,10 @@ const EMPTY_COMERCIAL = {
   fecha_proxima_accion: null,
   prioridad: null,
   sistema_actual: null,
+  clasificacion: null,
+  subclasificacion: null,
+  servicio: null,
+  ojos_en_alerta: null,
   notas: null
 };
 
@@ -63,6 +67,44 @@ export async function updateMunicipioComercial(id, payload) {
       "Content-Type": "application/json"
     },
     body: JSON.stringify(payload)
+  });
+
+  return parseApiResponse(response);
+}
+
+export async function loadTareas(params = {}) {
+  const query = new URLSearchParams();
+
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== "") {
+      query.set(key, value);
+    }
+  });
+
+  const suffix = query.toString() ? `?${query.toString()}` : "";
+  const response = await fetch(`${API_BASE_URL}/trabajo/tareas${suffix}`);
+  return parseApiResponse(response);
+}
+
+export async function createTarea(payload) {
+  const response = await fetch(`${API_BASE_URL}/trabajo/tareas`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(payload)
+  });
+
+  return parseApiResponse(response);
+}
+
+export async function setTareaCompletada(id, completado, fecha) {
+  const response = await fetch(`${API_BASE_URL}/trabajo/tareas/${encodeURIComponent(id)}/check`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ completado, fecha })
   });
 
   return parseApiResponse(response);

@@ -1,5 +1,13 @@
 import * as cards from "./cards.js";
-import { getMunicipioId, loadMunicipioDetalle, loadMunicipios, updateMunicipioComercial } from "./data.js";
+import {
+  createTarea,
+  getMunicipioId,
+  loadMunicipioDetalle,
+  loadMunicipios,
+  loadTareas,
+  setTareaCompletada,
+  updateMunicipioComercial
+} from "./data.js";
 import { setupFilters } from "./filters.js";
 import { flyToMunicipio, initMap, mostrarMarkers } from "./map.js";
 
@@ -17,6 +25,19 @@ const elements = {
   listaResultados: document.getElementById("lista-resultados")
 };
 
+function getTodayDate() {
+  const now = new Date();
+  const timezoneOffset = now.getTimezoneOffset() * 60000;
+  return new Date(now.getTime() - timezoneOffset).toISOString().slice(0, 10);
+}
+
+async function loadMunicipioTasks(id) {
+  if (!id) return [];
+
+  const data = await loadTareas({ municipio_id: id });
+  return (data.tareas || []).filter((task) => task.municipio_id === id);
+}
+
 async function renderMunicipioFicha(municipio) {
   const id = getMunicipioId(municipio);
 
@@ -28,36 +49,83 @@ async function renderMunicipioFicha(municipio) {
   cards.renderFichaLoading(elements.infoContent, municipio);
 
   try {
-    const detalle = await loadMunicipioDetalle(id);
-    renderFichaView(detalle);
+    const [detalle, tareas] = await Promise.all([
+      loadMunicipioDetalle(id),
+      loadMunicipioTasks(id)
+    ]);
+    renderFichaView(detalle, tareas);
   } catch (error) {
     cards.renderFichaError(elements.infoContent, error);
     console.error(error);
   }
 }
 
-function renderFichaView(municipio) {
+function renderFichaView(municipio, tareas = [], taskError = null) {
   cards.renderInfoPanel(elements.infoContent, municipio, {
-    onEdit: () => renderFichaEdit(municipio)
+    tasks: tareas,
+    taskError,
+    onEdit: () => renderFichaEdit(municipio, tareas),
+    onTaskCreate: async (payload) => {
+      try {
+        const id = getMunicipioId(municipio);
+        await createTarea({ ...payload, municipio_id: id });
+        renderMunicipioFicha(municipio);
+      } catch (error) {
+        renderFichaView(municipio, tareas, error);
+        console.error(error);
+      }
+    },
+    onTaskToggle: async (taskId, completado) => {
+      try {
+        await setTareaCompletada(taskId, completado, getTodayDate());
+        renderMunicipioFicha(municipio);
+      } catch (error) {
+        renderFichaView(municipio, tareas, error);
+        console.error(error);
+      }
+    }
   });
 }
 
-function renderFichaEdit(municipio, error = null, isSaving = false) {
+function renderFichaEdit(municipio, tareas = [], error = null, isSaving = false) {
   cards.renderInfoPanel(elements.infoContent, municipio, {
     mode: "edit",
+    tasks: tareas,
     error,
     isSaving,
-    onCancel: () => renderFichaView(municipio),
+    onCancel: () => renderFichaView(municipio, tareas),
+    onTaskCreate: async (payload) => {
+      try {
+        const id = getMunicipioId(municipio);
+        await createTarea({ ...payload, municipio_id: id });
+        renderMunicipioFicha(municipio);
+      } catch (taskError) {
+        renderFichaView(municipio, tareas, taskError);
+        console.error(taskError);
+      }
+    },
+    onTaskToggle: async (taskId, completado) => {
+      try {
+        await setTareaCompletada(taskId, completado, getTodayDate());
+        renderMunicipioFicha(municipio);
+      } catch (taskError) {
+        renderFichaView(municipio, tareas, taskError);
+        console.error(taskError);
+      }
+    },
     onSave: async (payload) => {
-      renderFichaEdit(municipio, null, true);
+      renderFichaEdit(municipio, tareas, null, true);
 
       try {
         const id = getMunicipioId(municipio);
         await updateMunicipioComercial(id, payload);
-        const detalle = await loadMunicipioDetalle(id);
-        renderFichaView(detalle);
+        const [detalle, nextTasks] = await Promise.all([
+          loadMunicipioDetalle(id),
+          loadMunicipioTasks(id)
+        ]);
+        renderFichaView(detalle, nextTasks);
       } catch (saveError) {
-        renderFichaEdit(municipio, saveError, false);
+        renderFichaEdit(municipio, tareas, saveError, false);
         console.error(saveError);
       }
     }

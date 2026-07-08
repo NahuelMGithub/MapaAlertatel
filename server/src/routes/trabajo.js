@@ -93,6 +93,8 @@ function parseRitualItem(row) {
 function parseTask(row) {
   return {
     id: row.id,
+    municipio_id: row.municipio_id,
+    municipio_nombre: row.municipio_nombre || null,
     titulo: row.titulo,
     descripcion: row.descripcion,
     fecha: row.fecha,
@@ -188,6 +190,7 @@ function validateTaskCreate(body) {
   try {
     const titulo = normalizeText(body.titulo, "titulo", { required: true, max: 180 });
     const descripcion = normalizeText(body.descripcion, "descripcion", { max: 1000 }) || null;
+    const municipio_id = normalizeText(body.municipio_id, "municipio_id", { max: 120 }) || null;
     const fecha = body.fecha || todayDate();
     const estado = body.estado || "pendiente";
     const prioridad = body.prioridad || "media";
@@ -204,7 +207,7 @@ function validateTaskCreate(body) {
       return { error: "prioridad debe ser baja, media o alta" };
     }
 
-    return { payload: { titulo, descripcion, fecha, estado, prioridad } };
+    return { payload: { titulo, descripcion, municipio_id, fecha, estado, prioridad } };
   } catch (error) {
     return { error: error.message };
   }
@@ -218,7 +221,8 @@ function validateTaskPatch(body) {
   try {
     const payload = {
       titulo: normalizeText(body.titulo, "titulo", { max: 180 }),
-      descripcion: normalizeText(body.descripcion, "descripcion", { max: 1000 })
+      descripcion: normalizeText(body.descripcion, "descripcion", { max: 1000 }),
+      municipio_id: normalizeText(body.municipio_id, "municipio_id", { max: 120 })
     };
 
     if (body.fecha !== undefined) {
@@ -256,7 +260,14 @@ function validateTaskPatch(body) {
 }
 
 function getTaskById(db, id) {
-  return db.prepare("SELECT * FROM trabajo_tareas WHERE id = ?").get(id);
+  return db
+    .prepare(
+      `SELECT tt.*, m.nombre AS municipio_nombre
+       FROM trabajo_tareas tt
+       LEFT JOIN municipios m ON m.id = tt.municipio_id
+       WHERE tt.id = ?`
+    )
+    .get(id);
 }
 
 function completionTimestampForDate(fecha) {
@@ -407,22 +418,40 @@ module.exports = function trabajoRouter(db) {
       return;
     }
 
+    const municipioId = typeof req.query.municipio_id === "string" && req.query.municipio_id.trim()
+      ? req.query.municipio_id.trim()
+      : null;
+    const params = [];
+    const whereParts = [];
+
+    if (municipioId) {
+      whereParts.push("tt.municipio_id = ?");
+      params.push(municipioId);
+    } else {
+      whereParts.push(
+        `((tt.estado = 'pendiente' AND tt.fecha <= ?)
+          OR (tt.estado = 'completada' AND (
+            tt.fecha = ?
+            OR (tt.completada_at IS NOT NULL AND substr(tt.completada_at, 1, 10) = ?)
+          )))`
+      );
+      params.push(dateResult.fecha, dateResult.fecha, dateResult.fecha);
+    }
+
     const rows = db
       .prepare(
-        `SELECT *
-         FROM trabajo_tareas
-         WHERE (estado = 'pendiente' AND fecha <= ?)
-            OR (estado = 'completada' AND (
-              fecha = ?
-              OR (completada_at IS NOT NULL AND substr(completada_at, 1, 10) = ?)
-            ))
+        `SELECT tt.*, m.nombre AS municipio_nombre
+         FROM trabajo_tareas tt
+         LEFT JOIN municipios m ON m.id = tt.municipio_id
+         WHERE ${whereParts.join(" AND ")}
          ORDER BY
-           CASE WHEN fecha < ? AND estado = 'pendiente' THEN 0 ELSE 1 END,
-           fecha ASC,
-           CASE prioridad WHEN 'alta' THEN 1 WHEN 'media' THEN 2 ELSE 3 END,
-           id ASC`
+           CASE WHEN tt.fecha < ? AND tt.estado = 'pendiente' THEN 0 ELSE 1 END,
+           CASE WHEN tt.estado = 'completada' THEN 1 ELSE 0 END,
+           tt.fecha ASC,
+           CASE tt.prioridad WHEN 'alta' THEN 1 WHEN 'media' THEN 2 ELSE 3 END,
+           tt.id ASC`
       )
-      .all(dateResult.fecha, dateResult.fecha, dateResult.fecha, dateResult.fecha);
+      .all(...params, dateResult.fecha);
 
     res.json({
       fecha: dateResult.fecha,
@@ -443,10 +472,11 @@ module.exports = function trabajoRouter(db) {
       : null;
     const result = db
       .prepare(
-        `INSERT INTO trabajo_tareas (titulo, descripcion, fecha, estado, prioridad, completada_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`
+        `INSERT INTO trabajo_tareas (municipio_id, titulo, descripcion, fecha, estado, prioridad, completada_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`
       )
       .run(
+        validation.payload.municipio_id,
         validation.payload.titulo,
         validation.payload.descripcion,
         validation.payload.fecha,
@@ -476,6 +506,7 @@ module.exports = function trabajoRouter(db) {
     const next = {
       titulo: validation.payload.titulo === undefined ? current.titulo : validation.payload.titulo,
       descripcion: validation.payload.descripcion === undefined ? current.descripcion : validation.payload.descripcion,
+      municipio_id: validation.payload.municipio_id === undefined ? current.municipio_id : validation.payload.municipio_id,
       fecha: validation.payload.fecha === undefined ? current.fecha : validation.payload.fecha,
       estado: validation.payload.estado === undefined ? current.estado : validation.payload.estado,
       prioridad: validation.payload.prioridad === undefined ? current.prioridad : validation.payload.prioridad
@@ -493,9 +524,9 @@ module.exports = function trabajoRouter(db) {
 
     db.prepare(
       `UPDATE trabajo_tareas
-       SET titulo = ?, descripcion = ?, fecha = ?, estado = ?, prioridad = ?, completada_at = ?, updated_at = CURRENT_TIMESTAMP
+       SET municipio_id = ?, titulo = ?, descripcion = ?, fecha = ?, estado = ?, prioridad = ?, completada_at = ?, updated_at = CURRENT_TIMESTAMP
        WHERE id = ?`
-    ).run(next.titulo, next.descripcion, next.fecha, next.estado, next.prioridad, completadaAt, req.params.id);
+    ).run(next.municipio_id, next.titulo, next.descripcion, next.fecha, next.estado, next.prioridad, completadaAt, req.params.id);
 
     res.json(parseTask(getTaskById(db, req.params.id)));
   });
