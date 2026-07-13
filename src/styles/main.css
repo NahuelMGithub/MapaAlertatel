@@ -1324,6 +1324,71 @@ a:hover {
   background: var(--surface-muted);
 }
 
+.okr-form {
+  display: grid;
+  gap: 8px;
+}
+
+.okr-form__top {
+  display: grid;
+  grid-template-columns: 160px 140px;
+  gap: 8px;
+}
+
+.okr-form label,
+.okr-result-field {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.okr-form input,
+.okr-form select {
+  width: 100%;
+  min-height: 34px;
+  padding: 7px 8px;
+  border: 1px solid var(--border-strong);
+  border-radius: 7px;
+  background: #fff;
+  color: var(--text);
+  outline: none;
+}
+
+.okr-result-field input + input {
+  margin-top: 2px;
+}
+
+.okr-progress-row {
+  display: grid;
+  grid-template-columns: 80px 80px minmax(0, 1fr);
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.okr-progress-actions {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) 34px;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.okr-progress-actions .secondary-action {
+  min-width: 34px;
+  padding: 6px 0;
+}
+
+.okr-progress-actions strong {
+  text-align: center;
+}
+
+.okr-form__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
 .app-shell--daily-page {
   height: auto;
   min-height: 100vh;
@@ -1744,6 +1809,8 @@ a:hover {
   .municipality-task-columns,
   .form-grid,
   .placeholder-grid,
+  .okr-form__top,
+  .okr-progress-row,
   .okr-results {
     grid-template-columns: 1fr;
   }

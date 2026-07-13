@@ -1,11 +1,11 @@
 import * as cards from "./cards.js";
 import {
-  createTarea,
+  eliminarProximaAccion,
+  finalizarProximaAccion,
   getMunicipioId,
   loadMunicipioDetalle,
   loadMunicipios,
-  loadTareas,
-  setTareaCompletada,
+  loadProximasAcciones,
   updateMunicipioComercial
 } from "./data.js";
 import { setupFilters } from "./filters.js";
@@ -14,6 +14,7 @@ import { flyToMunicipio, initMap, mostrarMarkers } from "./map.js";
 const elements = {
   infoContent: document.getElementById("info-content"),
   estadoFilter: document.getElementById("estado-filter"),
+  ojosEnAlertaFilter: document.getElementById("ojos-en-alerta-filter"),
   nombreFilter: document.getElementById("nombre-filter"),
   pobMinInput: document.getElementById("pob-min"),
   pobMaxInput: document.getElementById("pob-max"),
@@ -22,21 +23,12 @@ const elements = {
   applyFiltersBtn: document.getElementById("apply-filters"),
   politicoFilter: document.getElementById("politico-filter"),
   seccionelectoralFilter: document.getElementById("seccionelectoral-filter"),
-  listaResultados: document.getElementById("lista-resultados")
+  listaResultados: document.getElementById("lista-resultados"),
+  nextActionsCount: document.getElementById("next-actions-count"),
+  nextActionsList: document.getElementById("next-actions-list")
 };
 
-function getTodayDate() {
-  const now = new Date();
-  const timezoneOffset = now.getTimezoneOffset() * 60000;
-  return new Date(now.getTime() - timezoneOffset).toISOString().slice(0, 10);
-}
-
-async function loadMunicipioTasks(id) {
-  if (!id) return [];
-
-  const data = await loadTareas({ municipio_id: id });
-  return (data.tareas || []).filter((task) => task.municipio_id === id);
-}
+let municipiosData = [];
 
 async function renderMunicipioFicha(municipio) {
   const id = getMunicipioId(municipio);
@@ -49,86 +41,107 @@ async function renderMunicipioFicha(municipio) {
   cards.renderFichaLoading(elements.infoContent, municipio);
 
   try {
-    const [detalle, tareas] = await Promise.all([
-      loadMunicipioDetalle(id),
-      loadMunicipioTasks(id)
-    ]);
-    renderFichaView(detalle, tareas);
+    const detalle = await loadMunicipioDetalle(id);
+    renderFichaView(detalle);
   } catch (error) {
     cards.renderFichaError(elements.infoContent, error);
     console.error(error);
   }
 }
 
-function renderFichaView(municipio, tareas = [], taskError = null) {
+function renderFichaView(municipio) {
   cards.renderInfoPanel(elements.infoContent, municipio, {
-    tasks: tareas,
-    taskError,
-    onEdit: () => renderFichaEdit(municipio, tareas),
-    onTaskCreate: async (payload) => {
+    onEdit: () => renderFichaEdit(municipio),
+    onActionDelete: async () => {
+      await eliminarProximaAccion(getMunicipioId(municipio));
+      await Promise.all([renderMunicipioFicha(municipio), renderGlobalActions()]);
+    },
+    onActionFinish: async () => {
+      await finalizarProximaAccion(getMunicipioId(municipio));
+      await Promise.all([renderMunicipioFicha(municipio), renderGlobalActions()]);
+    },
+  });
+}
+
+function renderFichaEdit(municipio, error = null, isSaving = false) {
+  cards.renderInfoPanel(elements.infoContent, municipio, {
+    mode: "edit",
+    error,
+    isSaving,
+    onCancel: () => renderFichaView(municipio),
+    onSave: async (payload) => {
+      renderFichaEdit(municipio, null, true);
+
       try {
         const id = getMunicipioId(municipio);
-        await createTarea({ ...payload, municipio_id: id });
-        renderMunicipioFicha(municipio);
-      } catch (error) {
-        renderFichaView(municipio, tareas, error);
-        console.error(error);
-      }
-    },
-    onTaskToggle: async (taskId, completado) => {
-      try {
-        await setTareaCompletada(taskId, completado, getTodayDate());
-        renderMunicipioFicha(municipio);
-      } catch (error) {
-        renderFichaView(municipio, tareas, error);
-        console.error(error);
+        await updateMunicipioComercial(id, payload);
+        const detalle = await loadMunicipioDetalle(id);
+        renderFichaView(detalle);
+        renderGlobalActions();
+      } catch (saveError) {
+        renderFichaEdit(municipio, saveError, false);
+        console.error(saveError);
       }
     }
   });
 }
 
-function renderFichaEdit(municipio, tareas = [], error = null, isSaving = false) {
-  cards.renderInfoPanel(elements.infoContent, municipio, {
-    mode: "edit",
-    tasks: tareas,
-    error,
-    isSaving,
-    onCancel: () => renderFichaView(municipio, tareas),
-    onTaskCreate: async (payload) => {
-      try {
-        const id = getMunicipioId(municipio);
-        await createTarea({ ...payload, municipio_id: id });
-        renderMunicipioFicha(municipio);
-      } catch (taskError) {
-        renderFichaView(municipio, tareas, taskError);
-        console.error(taskError);
-      }
-    },
-    onTaskToggle: async (taskId, completado) => {
-      try {
-        await setTareaCompletada(taskId, completado, getTodayDate());
-        renderMunicipioFicha(municipio);
-      } catch (taskError) {
-        renderFichaView(municipio, tareas, taskError);
-        console.error(taskError);
-      }
-    },
-    onSave: async (payload) => {
-      renderFichaEdit(municipio, tareas, null, true);
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
 
-      try {
-        const id = getMunicipioId(municipio);
-        await updateMunicipioComercial(id, payload);
-        const [detalle, nextTasks] = await Promise.all([
-          loadMunicipioDetalle(id),
-          loadMunicipioTasks(id)
-        ]);
-        renderFichaView(detalle, nextTasks);
-      } catch (saveError) {
-        renderFichaEdit(municipio, tareas, saveError, false);
-        console.error(saveError);
-      }
-    }
+async function openActionMunicipality(id, edit = false) {
+  const municipio = municipiosData.find((item) => getMunicipioId(item) === id);
+  const detalle = await loadMunicipioDetalle(id);
+  if (edit) {
+    renderFichaEdit(detalle);
+  } else {
+    renderFichaView(detalle);
+  }
+  if (municipio) flyToMunicipio(municipio);
+}
+
+async function renderGlobalActions() {
+  const acciones = await loadProximasAcciones();
+  elements.nextActionsCount.textContent = String(acciones.length);
+  elements.nextActionsList.innerHTML = acciones.length
+    ? acciones.map((accion) => `
+        <div class="daily-item" data-action-municipality="${escapeHtml(accion.municipio_id)}">
+          <span class="daily-status daily-status--account">${escapeHtml(accion.municipio_nombre)}</span>
+          <strong>${escapeHtml(accion.titulo)}</strong>
+          ${accion.descripcion ? `<p>${escapeHtml(accion.descripcion)}</p>` : ""}
+          <small>${escapeHtml(accion.fecha || "Sin fecha")}</small>
+          <div class="form-actions">
+            <button class="secondary-action" type="button" data-action="view">Ver municipio</button>
+            <button class="secondary-action" type="button" data-action="edit">Editar</button>
+            <button class="secondary-action" type="button" data-action="delete">Eliminar</button>
+            <button class="primary-action" type="button" data-action="finish">Finalizar</button>
+          </div>
+        </div>
+      `).join("")
+    : `<div class="daily-empty"><strong>No hay próximas acciones pendientes</strong></div>`;
+
+  elements.nextActionsList.querySelectorAll("[data-action-municipality]").forEach((item) => {
+    item.querySelectorAll("[data-action]").forEach((button) => {
+      button.addEventListener("click", async () => {
+        const id = item.dataset.actionMunicipality;
+        if (button.dataset.action === "view") await openActionMunicipality(id);
+        if (button.dataset.action === "edit") await openActionMunicipality(id, true);
+        if (button.dataset.action === "delete") {
+          await eliminarProximaAccion(id);
+          await renderGlobalActions();
+        }
+        if (button.dataset.action === "finish") {
+          await finalizarProximaAccion(id);
+          await renderGlobalActions();
+        }
+      });
+    });
   });
 }
 
@@ -157,9 +170,10 @@ async function main() {
   try {
     initMap();
 
-    const municipiosData = await loadMunicipios();
+    municipiosData = await loadMunicipios();
     mostrarMarkers(municipiosData, renderMarkerSelection);
     setupFilters(elements, municipiosData, renderFilteredMunicipios);
+    await renderGlobalActions();
   } catch (error) {
     cards.renderLoadError(elements.infoContent, elements.listaResultados, error);
     console.error(error);

@@ -105,32 +105,12 @@
               <p class="panel-section__eyebrow">Mes</p>
               <h3>OKR del mes</h3>
             </div>
-            <span class="daily-count">Borrador</span>
+            <span class="daily-count" id="okr-status">Cargando</span>
           </div>
 
-          <div class="okr-block">
-            <div>
-              <span>Objetivo</span>
-              <strong>Convertir el mapa en una agenda comercial accionable</strong>
-              <p>Que cada municipio importante tenga estado, prioridad y proxima accion clara.</p>
-            </div>
-            <div class="okr-results">
-              <div>
-                <span>KR1</span>
-                <strong>40 fichas revisadas</strong>
-                <small>Estado comercial actualizado</small>
-              </div>
-              <div>
-                <span>KR2</span>
-                <strong>25 proximas acciones</strong>
-                <small>Con fecha definida</small>
-              </div>
-              <div>
-                <span>KR3</span>
-                <strong>15 conversaciones nuevas</strong>
-                <small>Prospectos o clientes activos</small>
-              </div>
-            </div>
+          <div class="form-error is-hidden" id="okr-error"></div>
+          <div class="okr-block" id="okr-block">
+            <div class="workday-loading">Cargando OKR del mes...</div>
           </div>
         </article>
 

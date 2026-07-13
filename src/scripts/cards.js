@@ -55,12 +55,18 @@ function websiteHref(value) {
   return value.startsWith("http://") || value.startsWith("https://") ? value : `https://${value}`;
 }
 
-function statusClass(estado) {
-  return estado === "Cliente" ? "cliente" : "prospecto";
+function accountClassification(m) {
+  return m.comercial?.clasificacion || m.estado;
 }
 
-function statusDescription(estado) {
-  return estado === "Cliente" ? "Cuenta activa en Alertatel" : "Cuenta pendiente de desarrollo comercial";
+function statusClass(m) {
+  return accountClassification(m) === "Cliente" ? "cliente" : "prospecto";
+}
+
+function statusDescription(m) {
+  return accountClassification(m) === "Cliente"
+    ? "Cuenta activa en Alertatel"
+    : "Cuenta no cliente";
 }
 
 function currentStatus(m) {
@@ -84,19 +90,8 @@ function currentMainContact(m) {
   return valueOrDash(m.contacto);
 }
 
-function currentProducts(m) {
-  const system = valueOrDash(m.comercial?.servicio || m.comercial?.sistema_actual || m.sistema);
-  const buttons = valueOrDash(m["Cantidad de botones"]);
-
-  if (system === "-" && buttons === "-") {
-    return "Sin producto o sistema registrado";
-  }
-
-  if (buttons === "-") {
-    return system;
-  }
-
-  return `${system} - ${buttons} botones`;
+function currentService(m) {
+  return valueOrDash(m.comercial?.servicio);
 }
 
 function yesNoOrDash(value) {
@@ -126,21 +121,13 @@ function renderCommercialView(m) {
         <span>Prioridad</span>
         <strong>${escapeHtml(currentPriority(m))}</strong>
       </div>
-      <div class="tracking-item tracking-item--wide">
-        <span>Proxima accion</span>
-        <strong>${escapeHtml(currentNextAction(m))}</strong>
-      </div>
-      <div class="tracking-item">
-        <span>Fecha proxima accion</span>
-        <strong>${escapeHtml(currentNextActionDate(m))}</strong>
-      </div>
       <div class="tracking-item">
         <span>Contacto principal</span>
         <strong>${escapeHtml(currentMainContact(m))}</strong>
       </div>
       <div class="tracking-item">
         <span>Servicio</span>
-        <strong>${escapeHtml(currentProducts(m))}</strong>
+        <strong>${escapeHtml(currentService(m))}</strong>
       </div>
       <div class="tracking-item">
         <span>Clasificación</span>
@@ -158,6 +145,21 @@ function renderCommercialView(m) {
         <span>Notas</span>
         <strong>${escapeHtml(valueOrDash(m.comercial?.notas))}</strong>
       </div>
+    </div>
+    <div class="next-action-placeholder">
+      <span>Próxima acción</span>
+      <strong>${escapeHtml(currentNextAction(m))}</strong>
+      <p>${escapeHtml(valueOrDash(m.comercial?.proxima_accion_descripcion))}</p>
+      <small>Fecha: ${escapeHtml(currentNextActionDate(m))}</small>
+      ${
+        m.comercial?.proxima_accion
+          ? `<div class="form-actions">
+              <button class="secondary-action" type="button" id="next-action-edit-button">Editar</button>
+              <button class="secondary-action" type="button" id="next-action-delete-button">Eliminar</button>
+              <button class="primary-action" type="button" id="next-action-finish-button">Dar por terminada</button>
+            </div>`
+          : ""
+      }
     </div>
   `;
 }
@@ -226,18 +228,18 @@ function renderCommercialForm(m, options) {
         </label>
 
         <label class="form-field--wide">
-          <span>Proxima accion</span>
-          <input name="proxima_accion" type="text" value="${escapeHtml(comercial.proxima_accion)}" placeholder="Ej: llamar para coordinar reunion" ${disabled}>
+          <span>Próxima acción: título</span>
+          <input name="proxima_accion" type="text" value="${escapeHtml(comercial.proxima_accion)}" placeholder="Ej: Coordinar reunión" ${disabled}>
+        </label>
+
+        <label class="form-field--wide">
+          <span>Próxima acción: descripción</span>
+          <textarea name="proxima_accion_descripcion" rows="3" placeholder="Detalle de la acción a realizar" ${disabled}>${escapeHtml(comercial.proxima_accion_descripcion)}</textarea>
         </label>
 
         <label>
           <span>Fecha proxima accion</span>
           <input name="fecha_proxima_accion" type="date" value="${escapeHtml(comercial.fecha_proxima_accion)}" ${disabled}>
-        </label>
-
-        <label>
-          <span>Sistema actual</span>
-          <input name="sistema_actual" type="text" value="${escapeHtml(comercial.sistema_actual)}" placeholder="Sistema usado actualmente" ${disabled}>
         </label>
 
         <label class="form-field--wide">
@@ -382,6 +384,8 @@ export function renderInfoPanel(infoContent, m, options = {}) {
     onEdit: null,
     onCancel: null,
     onSave: null,
+    onActionDelete: null,
+    onActionFinish: null,
     onTaskCreate: null,
     onTaskToggle: null,
     ...options
@@ -395,9 +399,9 @@ export function renderInfoPanel(infoContent, m, options = {}) {
           <p class="municipality-card__eyebrow">Cuenta municipal</p>
           <h2 class="municipality-card__title">${escapeHtml(m.nombre)}</h2>
           <p class="municipality-card__subtitle">${escapeHtml(valueOrDash(m.Provincia))} - Seccion ${escapeHtml(valueOrDash(m.seccionelectoral))}</p>
-          <p class="municipality-card__status-note">${escapeHtml(statusDescription(m.estado))}</p>
+          <p class="municipality-card__status-note">${escapeHtml(statusDescription(m))}</p>
         </div>
-        <span class="municipality-card__status status-badge status-badge--${statusClass(m.estado)}">${escapeHtml(valueOrDash(m.estado))}</span>
+        <span class="municipality-card__status status-badge status-badge--${statusClass(m)}">${escapeHtml(valueOrDash(accountClassification(m)))}</span>
       </header>
 
       <section class="municipality-card__section municipality-card__section--tracking">
@@ -434,16 +438,12 @@ export function renderInfoPanel(infoContent, m, options = {}) {
           </div>
           <div class="metric-card">
             <span>Servicio</span>
-            <strong>${escapeHtml(valueOrDash(m.comercial?.servicio || m.comercial?.sistema_actual || m.sistema))}</strong>
+            <strong>${escapeHtml(currentService(m))}</strong>
           </div>
           <div class="metric-card">
             <span>Fecha inicio</span>
             <strong>${escapeHtml(valueOrDash(m["Fecha inicio"]))}</strong>
           </div>
-        </div>
-        <div class="next-action-placeholder">
-          <span>Proxima accion</span>
-          <strong>${escapeHtml(currentNextAction(m))}</strong>
         </div>
       </section>
 
@@ -493,21 +493,14 @@ export function renderInfoPanel(infoContent, m, options = {}) {
         </div>
       </section>
 
-      <section class="municipality-card__section">
-        <div class="section-title-row">
-          <div>
-            <p class="municipality-card__eyebrow">Tareas vinculadas</p>
-            <h3>Trabajo comercial pendiente</h3>
-          </div>
-          <span class="section-chip">${escapeHtml(String(renderOptions.tasks.length))} tareas</span>
-        </div>
-        ${renderMunicipalityTasks(renderOptions.tasks, renderOptions)}
-      </section>
     </article>
   `;
 
   const editButton = infoContent.querySelector("#commercial-edit-button");
   editButton?.addEventListener("click", () => renderOptions.onEdit?.());
+  infoContent.querySelector("#next-action-edit-button")?.addEventListener("click", () => renderOptions.onEdit?.());
+  infoContent.querySelector("#next-action-delete-button")?.addEventListener("click", () => renderOptions.onActionDelete?.());
+  infoContent.querySelector("#next-action-finish-button")?.addEventListener("click", () => renderOptions.onActionFinish?.());
 
   const cancelButton = infoContent.querySelector("#commercial-cancel-button");
   cancelButton?.addEventListener("click", () => renderOptions.onCancel?.());
@@ -553,7 +546,7 @@ export function renderListaResultados(listaResultados, lista, onSelectMunicipio)
         <span class="municipality-list-item__name">${escapeHtml(m.nombre)}</span>
         <span class="municipality-list-item__meta">Seccion ${escapeHtml(valueOrDash(m.seccionelectoral))} - ${escapeHtml(valueOrDash(m.poblacion))} hab.</span>
       </span>
-      <span class="status-badge status-badge--${statusClass(m.estado)}">${escapeHtml(valueOrDash(m.estado))}</span>
+      <span class="status-badge status-badge--${statusClass(m)}">${escapeHtml(valueOrDash(accountClassification(m)))}</span>
     `;
 
     item.addEventListener("click", () => {

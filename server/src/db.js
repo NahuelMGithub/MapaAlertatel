@@ -8,7 +8,10 @@ CREATE TABLE IF NOT EXISTS municipio_comercial (
   municipio_id TEXT PRIMARY KEY,
   estado_comercial TEXT,
   proxima_accion TEXT,
+  proxima_accion_descripcion TEXT,
   fecha_proxima_accion TEXT,
+  proxima_accion_estado TEXT DEFAULT 'pendiente',
+  proxima_accion_completada_at TEXT,
   notas TEXT,
   prioridad TEXT,
   sistema_actual TEXT,
@@ -67,6 +70,31 @@ CREATE TABLE IF NOT EXISTS trabajo_tareas (
 
 CREATE INDEX IF NOT EXISTS idx_trabajo_tareas_fecha_estado ON trabajo_tareas(fecha, estado);
 CREATE INDEX IF NOT EXISTS idx_trabajo_tareas_prioridad ON trabajo_tareas(prioridad);
+
+CREATE TABLE IF NOT EXISTS trabajo_okr_mensual (
+  mes TEXT PRIMARY KEY,
+  objetivo TEXT NOT NULL,
+  descripcion TEXT,
+  estado TEXT NOT NULL DEFAULT 'borrador' CHECK (estado IN ('borrador', 'activo', 'cerrado')),
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS trabajo_okr_resultados (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  mes TEXT NOT NULL,
+  titulo TEXT NOT NULL,
+  descripcion TEXT,
+  avance INTEGER NOT NULL DEFAULT 0,
+  meta INTEGER NOT NULL DEFAULT 1,
+  unidad TEXT,
+  orden INTEGER NOT NULL DEFAULT 0,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (mes) REFERENCES trabajo_okr_mensual(mes) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_trabajo_okr_resultados_mes_orden ON trabajo_okr_resultados(mes, orden);
 `;
 
 function ensureColumn(db, tableName, columnName, definition) {
@@ -90,10 +118,16 @@ function openDb() {
   ensureColumn(db, "municipio_comercial", "subclasificacion", "TEXT");
   ensureColumn(db, "municipio_comercial", "servicio", "TEXT");
   ensureColumn(db, "municipio_comercial", "ojos_en_alerta", "INTEGER");
+  ensureColumn(db, "municipio_comercial", "proxima_accion_descripcion", "TEXT");
+  ensureColumn(db, "municipio_comercial", "proxima_accion_estado", "TEXT DEFAULT 'pendiente'");
+  ensureColumn(db, "municipio_comercial", "proxima_accion_completada_at", "TEXT");
   db.exec("CREATE INDEX IF NOT EXISTS idx_municipio_comercial_clasificacion ON municipio_comercial(clasificacion)");
   db.exec("CREATE INDEX IF NOT EXISTS idx_municipio_comercial_servicio ON municipio_comercial(servicio)");
   ensureColumn(db, "trabajo_tareas", "municipio_id", "TEXT REFERENCES municipios(id) ON DELETE SET NULL");
   db.exec("CREATE INDEX IF NOT EXISTS idx_trabajo_tareas_municipio ON trabajo_tareas(municipio_id)");
+  ensureColumn(db, "trabajo_okr_resultados", "avance", "INTEGER NOT NULL DEFAULT 0");
+  ensureColumn(db, "trabajo_okr_resultados", "meta", "INTEGER NOT NULL DEFAULT 1");
+  ensureColumn(db, "trabajo_okr_resultados", "unidad", "TEXT");
   return db;
 }
 

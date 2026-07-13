@@ -24,7 +24,10 @@ CREATE TABLE IF NOT EXISTS municipio_comercial (
   municipio_id TEXT PRIMARY KEY,
   estado_comercial TEXT,
   proxima_accion TEXT,
+  proxima_accion_descripcion TEXT,
   fecha_proxima_accion TEXT,
+  proxima_accion_estado TEXT DEFAULT 'pendiente' CHECK (proxima_accion_estado IN ('pendiente', 'finalizada')),
+  proxima_accion_completada_at TEXT,
   notas TEXT,
   prioridad TEXT,
   sistema_actual TEXT,
@@ -84,3 +87,28 @@ CREATE TABLE IF NOT EXISTS trabajo_tareas (
 CREATE INDEX IF NOT EXISTS idx_trabajo_tareas_municipio ON trabajo_tareas(municipio_id);
 CREATE INDEX IF NOT EXISTS idx_trabajo_tareas_fecha_estado ON trabajo_tareas(fecha, estado);
 CREATE INDEX IF NOT EXISTS idx_trabajo_tareas_prioridad ON trabajo_tareas(prioridad);
+
+CREATE TABLE IF NOT EXISTS trabajo_okr_mensual (
+  mes TEXT PRIMARY KEY,
+  objetivo TEXT NOT NULL,
+  descripcion TEXT,
+  estado TEXT NOT NULL DEFAULT 'borrador' CHECK (estado IN ('borrador', 'activo', 'cerrado')),
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS trabajo_okr_resultados (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  mes TEXT NOT NULL,
+  titulo TEXT NOT NULL,
+  descripcion TEXT,
+  avance INTEGER NOT NULL DEFAULT 0,
+  meta INTEGER NOT NULL DEFAULT 1,
+  unidad TEXT,
+  orden INTEGER NOT NULL DEFAULT 0,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (mes) REFERENCES trabajo_okr_mensual(mes) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_trabajo_okr_resultados_mes_orden ON trabajo_okr_resultados(mes, orden);

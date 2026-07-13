@@ -41,8 +41,9 @@
             <label for="estado-filter">Estado</label>
             <select id="estado-filter">
               <option value="todos">Todos</option>
-              <option value="Cliente">Cliente</option>
-              <option value="Prospecto">Prospecto</option>
+              <option value="clientes">Clientes</option>
+              <option value="prospectos">Prospectos</option>
+              <option value="no-clientes">No clientes</option>
             </select>
 
             <label for="nombre-filter">Nombre</label>
@@ -53,6 +54,13 @@
             </button>
 
             <div class="advanced-filters" id="advanced-filters" hidden>
+              <label for="ojos-en-alerta-filter">Ojos en Alerta</label>
+              <select id="ojos-en-alerta-filter">
+                <option value="todos">Todos</option>
+                <option value="si">Sí</option>
+                <option value="no">No</option>
+              </select>
+
               <div class="filter-row">
                 <div>
                   <label for="pob-min">Población mínima</label>
@@ -133,20 +141,11 @@
       <div class="daily-grid">
         <article class="daily-card">
           <div class="daily-card__header">
-            <h3>Tareas pendientes</h3>
-            <span class="daily-count">3</span>
+            <h3>Próximas acciones</h3>
+            <span class="daily-count" id="next-actions-count">0</span>
           </div>
-          <div class="daily-list">
-            <div class="daily-item">
-              <span class="daily-status daily-status--late">Vencida</span>
-              <strong>Llamar a prospecto sin contacto confirmado</strong>
-              <p>Municipio pendiente de seguimiento comercial.</p>
-            </div>
-            <div class="daily-item">
-              <span class="daily-status daily-status--today">Hoy</span>
-              <strong>Revisar clientes con datos incompletos</strong>
-              <p>Validar teléfono, sistema actual y próxima acción.</p>
-            </div>
+          <div class="daily-list" id="next-actions-list">
+            <div class="daily-empty">Cargando próximas acciones...</div>
           </div>
         </article>
 

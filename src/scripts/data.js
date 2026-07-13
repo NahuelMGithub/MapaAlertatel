@@ -1,9 +1,11 @@
-const MUNICIPIOS_URL = "../data/municipios.json";
 const API_BASE_URL = globalThis.ALERTATEL_API_BASE_URL || "http://localhost:3001/api";
 
 const EMPTY_COMERCIAL = {
   estado_comercial: null,
   proxima_accion: null,
+  proxima_accion_descripcion: null,
+  proxima_accion_estado: null,
+  proxima_accion_completada_at: null,
   fecha_proxima_accion: null,
   prioridad: null,
   sistema_actual: null,
@@ -15,13 +17,9 @@ const EMPTY_COMERCIAL = {
 };
 
 export async function loadMunicipios() {
-  const response = await fetch(MUNICIPIOS_URL);
-
-  if (!response.ok) {
-    throw new Error(`No se pudo cargar ${MUNICIPIOS_URL}`);
-  }
-
-  return response.json();
+  const response = await fetch(`${API_BASE_URL}/municipios`);
+  const data = await parseApiResponse(response);
+  return data.map(normalizeMunicipioDetalle);
 }
 
 export function getMunicipioId(municipio) {
@@ -69,6 +67,25 @@ export async function updateMunicipioComercial(id, payload) {
     body: JSON.stringify(payload)
   });
 
+  return parseApiResponse(response);
+}
+
+export async function loadProximasAcciones() {
+  const response = await fetch(`${API_BASE_URL}/municipios/proximas-acciones`);
+  return parseApiResponse(response);
+}
+
+export async function finalizarProximaAccion(id) {
+  const response = await fetch(`${API_BASE_URL}/municipios/${encodeURIComponent(id)}/proxima-accion/finalizar`, {
+    method: "PATCH"
+  });
+  return parseApiResponse(response);
+}
+
+export async function eliminarProximaAccion(id) {
+  const response = await fetch(`${API_BASE_URL}/municipios/${encodeURIComponent(id)}/proxima-accion`, {
+    method: "DELETE"
+  });
   return parseApiResponse(response);
 }
 

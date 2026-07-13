@@ -1,6 +1,7 @@
 function getFilterValues(elements) {
   return {
     estado: elements.estadoFilter.value,
+    ojosEnAlerta: elements.ojosEnAlertaFilter.value,
     nombre: elements.nombreFilter.value.toLowerCase(),
     pobMin: parseInt(elements.pobMinInput.value) || 0,
     pobMax: parseInt(elements.pobMaxInput.value) || Infinity,
@@ -16,13 +17,28 @@ export function aplicarFiltros(municipiosData, filters) {
     const politico = m.politico ? m.politico.toLowerCase() : "";
     const seccion = m.seccionelectoral ? m.seccionelectoral.toLowerCase() : "";
 
-    const matchEstado = filters.estado === "todos" || m.estado === filters.estado;
+    const clasificacion = m.comercial?.clasificacion;
+    const subclasificacion = m.comercial?.subclasificacion;
+    const esCliente = clasificacion === "Cliente" || (!clasificacion && m.estado === "Cliente");
+    const esProspecto = subclasificacion === "Prospecto" || (!clasificacion && m.estado === "Prospecto");
+    const esNoCliente = clasificacion === "No cliente" || esProspecto;
+    const estados = {
+      clientes: esCliente,
+      prospectos: esProspecto,
+      "no-clientes": esNoCliente
+    };
+
+    const matchEstado = filters.estado === "todos" || estados[filters.estado] === true;
+    const matchOjosEnAlerta =
+      filters.ojosEnAlerta === "todos" ||
+      (filters.ojosEnAlerta === "si" && m.comercial?.ojos_en_alerta === true) ||
+      (filters.ojosEnAlerta === "no" && m.comercial?.ojos_en_alerta === false);
     const matchNombre = nombre.includes(filters.nombre);
     const matchPoblacion = poblacion >= filters.pobMin && poblacion <= filters.pobMax;
     const matchPolitico = politico.includes(filters.politico);
     const matchSeccion = seccion.includes(filters.seccion);
 
-    return matchEstado && matchNombre && matchPoblacion && matchPolitico && matchSeccion;
+    return matchEstado && matchOjosEnAlerta && matchNombre && matchPoblacion && matchPolitico && matchSeccion;
   });
 }
 

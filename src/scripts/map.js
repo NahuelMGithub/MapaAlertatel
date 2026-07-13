@@ -46,7 +46,8 @@ export function mostrarMarkers(lista, onSelectMunicipio) {
   clearMarkers();
 
   lista.forEach(m => {
-    const iconColor = m.estado === "Cliente" ? "green" : "blue";
+    const clasificacion = m.comercial?.clasificacion || m.estado;
+    const iconColor = clasificacion === "Cliente" ? "green" : "blue";
     const marker = L.marker([m.lat, m.long], { icon: crearIcono(iconColor) }).addTo(map);
     marker.on("click", () => onSelectMunicipio(m));
     markers.push({ marker, data: m });

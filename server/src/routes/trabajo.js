@@ -2,6 +2,7 @@ const express = require("express");
 
 const TASK_STATES = ["pendiente", "completada"];
 const PRIORITIES = ["baja", "media", "alta"];
+const OKR_STATES = ["borrador", "activo", "cerrado"];
 
 function todayDate() {
   return new Date().toISOString().slice(0, 10);
@@ -16,6 +17,16 @@ function isValidDateOnly(value) {
   return !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === value;
 }
 
+function isValidMonth(value) {
+  return typeof value === "string" && /^\d{4}-(0[1-9]|1[0-2])$/.test(value);
+}
+
+function nextMonth(value) {
+  const [year, month] = value.split("-").map(Number);
+  const date = new Date(Date.UTC(year, month, 1));
+  return date.toISOString().slice(0, 7);
+}
+
 function getRequestDate(req) {
   const fecha = req.query.fecha || todayDate();
 
@@ -24,6 +35,16 @@ function getRequestDate(req) {
   }
 
   return { fecha };
+}
+
+function getRequestMonth(req) {
+  const mes = req.query.mes || todayDate().slice(0, 7);
+
+  if (!isValidMonth(mes)) {
+    return { error: "mes debe tener formato YYYY-MM" };
+  }
+
+  return { mes };
 }
 
 function normalizeText(value, field, { required = false, max = 300 } = {}) {
@@ -103,6 +124,31 @@ function parseTask(row) {
     completada_at: row.completada_at,
     created_at: row.created_at,
     updated_at: row.updated_at
+  };
+}
+
+function parseOkr(db, okrRow) {
+  if (!okrRow) {
+    return null;
+  }
+
+  const resultados = db
+    .prepare(
+      `SELECT id, mes, titulo, descripcion, avance, meta, unidad, orden, created_at, updated_at
+       FROM trabajo_okr_resultados
+       WHERE mes = ?
+       ORDER BY orden ASC, id ASC`
+    )
+    .all(okrRow.mes);
+
+  return {
+    mes: okrRow.mes,
+    objetivo: okrRow.objetivo,
+    descripcion: okrRow.descripcion,
+    estado: okrRow.estado,
+    resultados,
+    created_at: okrRow.created_at,
+    updated_at: okrRow.updated_at
   };
 }
 
@@ -211,6 +257,88 @@ function validateTaskCreate(body) {
   } catch (error) {
     return { error: error.message };
   }
+}
+
+function validateOkrPayload(body) {
+  if (!body || typeof body !== "object" || Array.isArray(body)) {
+    return { error: "El body debe ser un objeto JSON" };
+  }
+
+  try {
+    const mes = body.mes || todayDate().slice(0, 7);
+    const objetivo = normalizeText(body.objetivo, "objetivo", { required: true, max: 220 });
+    const descripcion = normalizeText(body.descripcion, "descripcion", { max: 800 }) || null;
+    const estado = body.estado || "borrador";
+
+    if (!isValidMonth(mes)) {
+      return { error: "mes debe tener formato YYYY-MM" };
+    }
+
+    if (!OKR_STATES.includes(estado)) {
+      return { error: "estado debe ser borrador, activo o cerrado" };
+    }
+
+    if (!Array.isArray(body.resultados)) {
+      return { error: "resultados debe ser una lista" };
+    }
+
+    const resultados = body.resultados
+      .map((resultado, index) => {
+        if (!resultado || typeof resultado !== "object" || Array.isArray(resultado)) {
+          throw new Error("Cada resultado debe ser un objeto JSON");
+        }
+
+        const titulo = normalizeText(resultado.titulo, `resultado ${index + 1}`, { max: 180 });
+        const descripcionResultado = normalizeText(resultado.descripcion, `descripcion resultado ${index + 1}`, { max: 500 }) || null;
+        const avance = resultado.avance === undefined || resultado.avance === "" ? 0 : Number(resultado.avance);
+        const meta = resultado.meta === undefined || resultado.meta === "" ? 1 : Number(resultado.meta);
+        const unidad = normalizeText(resultado.unidad, `unidad resultado ${index + 1}`, { max: 40 }) || null;
+
+        if (!titulo) {
+          return null;
+        }
+
+        if (!Number.isInteger(avance) || avance < 0) {
+          throw new Error(`avance resultado ${index + 1} debe ser un entero mayor o igual a 0`);
+        }
+
+        if (!Number.isInteger(meta) || meta < 1) {
+          throw new Error(`meta resultado ${index + 1} debe ser un entero mayor o igual a 1`);
+        }
+
+        return {
+          titulo,
+          descripcion: descripcionResultado,
+          avance,
+          meta,
+          unidad,
+          orden: index + 1
+        };
+      })
+      .filter(Boolean);
+
+    if (resultados.length === 0) {
+      return { error: "Debe cargar al menos un resultado clave" };
+    }
+
+    return { payload: { mes, objetivo, descripcion, estado, resultados } };
+  } catch (error) {
+    return { error: error.message };
+  }
+}
+
+function validateOkrClosePayload(body) {
+  if (!body || typeof body !== "object" || Array.isArray(body)) {
+    return { error: "El body debe ser un objeto JSON" };
+  }
+
+  const mes = body.mes || todayDate().slice(0, 7);
+
+  if (!isValidMonth(mes)) {
+    return { error: "mes debe tener formato YYYY-MM" };
+  }
+
+  return { payload: { mes } };
 }
 
 function validateTaskPatch(body) {
@@ -408,6 +536,175 @@ module.exports = function trabajoRouter(db) {
       .get(req.params.itemId, validation.payload.fecha);
 
     res.json(parseRitualItem(row));
+  });
+
+  router.get("/okr", (req, res) => {
+    const monthResult = getRequestMonth(req);
+
+    if (monthResult.error) {
+      res.status(400).json({ error: monthResult.error });
+      return;
+    }
+
+    const row = db
+      .prepare(
+        `SELECT mes, objetivo, descripcion, estado, created_at, updated_at
+         FROM trabajo_okr_mensual
+         WHERE mes = ?`
+      )
+      .get(monthResult.mes);
+
+    res.json({
+      mes: monthResult.mes,
+      okr: parseOkr(db, row)
+    });
+  });
+
+  router.put("/okr", (req, res) => {
+    const validation = validateOkrPayload(req.body);
+
+    if (validation.error) {
+      res.status(400).json({ error: validation.error });
+      return;
+    }
+
+    db.exec("BEGIN");
+
+    try {
+      db.prepare(
+        `INSERT INTO trabajo_okr_mensual (mes, objetivo, descripcion, estado, updated_at)
+         VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
+         ON CONFLICT(mes) DO UPDATE SET
+           objetivo = excluded.objetivo,
+           descripcion = excluded.descripcion,
+           estado = excluded.estado,
+           updated_at = CURRENT_TIMESTAMP`
+      ).run(
+        validation.payload.mes,
+        validation.payload.objetivo,
+        validation.payload.descripcion,
+        validation.payload.estado
+      );
+
+      db.prepare("DELETE FROM trabajo_okr_resultados WHERE mes = ?").run(validation.payload.mes);
+
+      const insertResultado = db.prepare(
+        `INSERT INTO trabajo_okr_resultados (mes, titulo, descripcion, avance, meta, unidad, orden, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`
+      );
+
+      validation.payload.resultados.forEach((resultado) => {
+        insertResultado.run(
+          validation.payload.mes,
+          resultado.titulo,
+          resultado.descripcion,
+          resultado.avance,
+          resultado.meta,
+          resultado.unidad,
+          resultado.orden
+        );
+      });
+
+      db.exec("COMMIT");
+    } catch (error) {
+      db.exec("ROLLBACK");
+      throw error;
+    }
+
+    const row = db
+      .prepare(
+        `SELECT mes, objetivo, descripcion, estado, created_at, updated_at
+         FROM trabajo_okr_mensual
+         WHERE mes = ?`
+      )
+      .get(validation.payload.mes);
+
+    res.json(parseOkr(db, row));
+  });
+
+  router.post("/okr/cerrar", (req, res) => {
+    const validation = validateOkrClosePayload(req.body);
+
+    if (validation.error) {
+      res.status(400).json({ error: validation.error });
+      return;
+    }
+
+    const current = db
+      .prepare(
+        `SELECT mes, objetivo, descripcion, estado, created_at, updated_at
+         FROM trabajo_okr_mensual
+         WHERE mes = ?`
+      )
+      .get(validation.payload.mes);
+
+    if (!current) {
+      res.status(404).json({ error: "OKR mensual no encontrado" });
+      return;
+    }
+
+    const currentOkr = parseOkr(db, current);
+    const nextMes = nextMonth(validation.payload.mes);
+
+    db.exec("BEGIN");
+
+    try {
+      db.prepare(
+        `UPDATE trabajo_okr_mensual
+         SET estado = 'cerrado', updated_at = CURRENT_TIMESTAMP
+         WHERE mes = ?`
+      ).run(validation.payload.mes);
+
+      const nextExists = db.prepare("SELECT mes FROM trabajo_okr_mensual WHERE mes = ?").get(nextMes);
+
+      if (!nextExists) {
+        db.prepare(
+          `INSERT INTO trabajo_okr_mensual (mes, objetivo, descripcion, estado, updated_at)
+           VALUES (?, ?, ?, 'borrador', CURRENT_TIMESTAMP)`
+        ).run(nextMes, currentOkr.objetivo, currentOkr.descripcion);
+
+        const insertResultado = db.prepare(
+          `INSERT INTO trabajo_okr_resultados (mes, titulo, descripcion, avance, meta, unidad, orden, updated_at)
+           VALUES (?, ?, ?, 0, ?, ?, ?, CURRENT_TIMESTAMP)`
+        );
+
+        currentOkr.resultados.forEach((resultado) => {
+          insertResultado.run(
+            nextMes,
+            resultado.titulo,
+            resultado.descripcion,
+            resultado.meta || 1,
+            resultado.unidad,
+            resultado.orden
+          );
+        });
+      }
+
+      db.exec("COMMIT");
+    } catch (error) {
+      db.exec("ROLLBACK");
+      throw error;
+    }
+
+    const closedRow = db
+      .prepare(
+        `SELECT mes, objetivo, descripcion, estado, created_at, updated_at
+         FROM trabajo_okr_mensual
+         WHERE mes = ?`
+      )
+      .get(validation.payload.mes);
+    const nextRow = db
+      .prepare(
+        `SELECT mes, objetivo, descripcion, estado, created_at, updated_at
+         FROM trabajo_okr_mensual
+         WHERE mes = ?`
+      )
+      .get(nextMes);
+
+    res.json({
+      cerrado: parseOkr(db, closedRow),
+      siguiente: parseOkr(db, nextRow)
+    });
   });
 
   router.get("/tareas", (req, res) => {

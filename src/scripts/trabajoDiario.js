@@ -13,6 +13,9 @@ const elements = {
   tasksEmpty: document.getElementById("tasks-empty"),
   taskForm: document.getElementById("task-create-form"),
   taskMunicipioSelect: document.getElementById("task-municipio-select"),
+  okrStatus: document.getElementById("okr-status"),
+  okrBlock: document.getElementById("okr-block"),
+  okrError: document.getElementById("okr-error"),
   helpButton: document.getElementById("workday-help-button"),
   helpModal: document.getElementById("workday-help-modal"),
   helpClose: document.getElementById("workday-help-close")
@@ -20,15 +23,21 @@ const elements = {
 
 const state = {
   fecha: getTodayDate(),
+  mes: getCurrentMonth(),
   ritual: [],
   tareas: [],
-  municipios: []
+  municipios: [],
+  okr: null
 };
 
 function getTodayDate() {
   const now = new Date();
   const timezoneOffset = now.getTimezoneOffset() * 60000;
   return new Date(now.getTime() - timezoneOffset).toISOString().slice(0, 10);
+}
+
+function getCurrentMonth() {
+  return getTodayDate().slice(0, 7);
 }
 
 function escapeHtml(value) {
@@ -75,8 +84,10 @@ function setError(element, error) {
 function setLoading() {
   elements.ritualCount.textContent = "Cargando";
   elements.tasksCount.textContent = "Cargando";
+  elements.okrStatus.textContent = "Cargando";
   elements.ritualList.innerHTML = `<div class="workday-loading">Cargando ritual diario...</div>`;
   elements.tasksList.innerHTML = `<div class="workday-loading">Cargando tareas...</div>`;
+  elements.okrBlock.innerHTML = `<div class="workday-loading">Cargando OKR del mes...</div>`;
   elements.tasksEmpty.classList.add("is-hidden");
 }
 
@@ -181,6 +192,118 @@ function renderTasks() {
   });
 }
 
+function defaultOkr() {
+  return {
+    mes: state.mes,
+    objetivo: "Convertir el mapa en una agenda comercial accionable",
+    descripcion: "Que cada municipio importante tenga estado, prioridad y proxima accion clara.",
+    estado: "borrador",
+    resultados: [
+      {
+        titulo: "40 fichas revisadas",
+        descripcion: "Estado comercial actualizado",
+        avance: 0,
+        meta: 40,
+        unidad: "fichas"
+      },
+      {
+        titulo: "25 proximas acciones",
+        descripcion: "Con fecha definida",
+        avance: 0,
+        meta: 25,
+        unidad: "acciones"
+      },
+      {
+        titulo: "15 conversaciones nuevas",
+        descripcion: "Prospectos o clientes activos",
+        avance: 0,
+        meta: 15,
+        unidad: "conversaciones"
+      }
+    ]
+  };
+}
+
+function renderOkr() {
+  const okr = state.okr || defaultOkr();
+  const resultados = [...okr.resultados];
+
+  while (resultados.length < 3) {
+    resultados.push({ titulo: "", descripcion: "", avance: 0, meta: 1, unidad: "" });
+  }
+
+  elements.okrStatus.textContent = okr.estado === "activo" ? "Activo" : okr.estado === "cerrado" ? "Cerrado" : "Borrador";
+  elements.okrBlock.innerHTML = `
+    <form class="okr-form" id="okr-form">
+      <div class="okr-form__top">
+        <label>
+          <span>Mes</span>
+          <input name="mes" type="month" value="${escapeHtml(okr.mes || state.mes)}" required>
+        </label>
+        <label>
+          <span>Estado</span>
+          <select name="estado">
+            <option value="borrador" ${okr.estado === "borrador" ? "selected" : ""}>Borrador</option>
+            <option value="activo" ${okr.estado === "activo" ? "selected" : ""}>Activo</option>
+            <option value="cerrado" ${okr.estado === "cerrado" ? "selected" : ""}>Cerrado</option>
+          </select>
+        </label>
+      </div>
+      <label class="okr-form__objective">
+        <span>Objetivo</span>
+        <input name="objetivo" type="text" value="${escapeHtml(okr.objetivo)}" required>
+      </label>
+      <label class="okr-form__objective">
+        <span>Descripcion</span>
+        <input name="descripcion" type="text" value="${escapeHtml(okr.descripcion || "")}">
+      </label>
+      <div class="okr-results">
+        ${resultados
+          .slice(0, 3)
+          .map(
+            (resultado, index) => `
+              <div class="okr-result-field">
+                <span>KR${index + 1}</span>
+                <input name="resultado_titulo_${index}" type="text" value="${escapeHtml(resultado.titulo || "")}" placeholder="Resultado clave">
+                <input name="resultado_descripcion_${index}" type="text" value="${escapeHtml(resultado.descripcion || "")}" placeholder="Detalle">
+                <div class="okr-progress-row">
+                  <label>
+                    <span>Avance</span>
+                    <input name="resultado_avance_${index}" type="number" min="0" step="1" value="${escapeHtml(resultado.avance ?? 0)}" data-okr-progress="${index}">
+                  </label>
+                  <label>
+                    <span>Meta</span>
+                    <input name="resultado_meta_${index}" type="number" min="1" step="1" value="${escapeHtml(resultado.meta ?? 1)}">
+                  </label>
+                  <label>
+                    <span>Unidad</span>
+                    <input name="resultado_unidad_${index}" type="text" value="${escapeHtml(resultado.unidad || "")}" placeholder="fichas">
+                  </label>
+                </div>
+                <div class="okr-progress-actions">
+                  <button class="secondary-action" type="button" data-okr-step="${index}" data-step-delta="-1">-</button>
+                  <strong>${escapeHtml(resultado.avance ?? 0)} / ${escapeHtml(resultado.meta ?? 1)} ${escapeHtml(resultado.unidad || "")}</strong>
+                  <button class="secondary-action" type="button" data-okr-step="${index}" data-step-delta="1">+</button>
+                </div>
+              </div>
+            `
+          )
+          .join("")}
+      </div>
+      <div class="okr-form__actions">
+        <button class="secondary-action" type="button" id="okr-close-month" ${okr.estado === "cerrado" ? "disabled" : ""}>Cerrar mes</button>
+        <button class="primary-action" type="submit">Guardar OKR</button>
+      </div>
+    </form>
+  `;
+
+  elements.okrBlock.querySelector("#okr-form").addEventListener("submit", handleOkrSave);
+  elements.okrBlock.querySelector("#okr-close-month").addEventListener("click", handleOkrCloseMonth);
+  elements.okrBlock.querySelectorAll("[data-okr-step]").forEach((button) => {
+    button.addEventListener("click", () => handleOkrStep(button));
+  });
+}
+
 async function loadRitual() {
   const data = await apiGet(`/trabajo/ritual?fecha=${encodeURIComponent(state.fecha)}`);
   state.ritual = data.items || [];
@@ -191,6 +314,12 @@ async function loadTasks() {
   const data = await apiGet(`/trabajo/tareas?fecha=${encodeURIComponent(state.fecha)}`);
   state.tareas = data.tareas || [];
   renderTasks();
+}
+
+async function loadOkr() {
+  const data = await apiGet(`/trabajo/okr?mes=${encodeURIComponent(state.mes)}`);
+  state.okr = data.okr || defaultOkr();
+  renderOkr();
 }
 
 function renderMunicipioOptions() {
@@ -297,6 +426,73 @@ async function handleTaskCreate(event) {
   }
 }
 
+async function handleOkrSave(event) {
+  event.preventDefault();
+
+  const form = event.currentTarget;
+  const formData = new FormData(form);
+  const submitButton = form.querySelector("button[type='submit']");
+  const resultados = [0, 1, 2].map((index) => ({
+    titulo: String(formData.get(`resultado_titulo_${index}`) || "").trim(),
+    descripcion: String(formData.get(`resultado_descripcion_${index}`) || "").trim(),
+    avance: Number(formData.get(`resultado_avance_${index}`) || 0),
+    meta: Number(formData.get(`resultado_meta_${index}`) || 1),
+    unidad: String(formData.get(`resultado_unidad_${index}`) || "").trim()
+  }));
+
+  submitButton.disabled = true;
+  setError(elements.okrError, null);
+
+  try {
+    const okr = await apiSend("/trabajo/okr", "PUT", {
+      mes: String(formData.get("mes") || state.mes),
+      estado: String(formData.get("estado") || "borrador"),
+      objetivo: String(formData.get("objetivo") || "").trim(),
+      descripcion: String(formData.get("descripcion") || "").trim() || null,
+      resultados
+    });
+
+    state.mes = okr.mes;
+    state.okr = okr;
+    renderOkr();
+  } catch (error) {
+    setError(elements.okrError, error);
+  } finally {
+    submitButton.disabled = false;
+  }
+}
+
+async function handleOkrStep(button) {
+  const form = button.closest("form");
+  const index = Number(button.dataset.okrStep);
+  const delta = Number(button.dataset.stepDelta);
+  const input = form.querySelector(`[name="resultado_avance_${index}"]`);
+  const current = Number(input.value || 0);
+
+  input.value = String(Math.max(0, current + delta));
+  await handleOkrSave({ preventDefault() {}, currentTarget: form });
+}
+
+async function handleOkrCloseMonth(event) {
+  const button = event.currentTarget;
+
+  button.disabled = true;
+  setError(elements.okrError, null);
+
+  try {
+    const data = await apiSend("/trabajo/okr/cerrar", "POST", {
+      mes: state.mes
+    });
+
+    state.mes = data.siguiente.mes;
+    state.okr = data.siguiente;
+    renderOkr();
+  } catch (error) {
+    setError(elements.okrError, error);
+    button.disabled = false;
+  }
+}
+
 function openHelpModal() {
   elements.helpModal.classList.remove("is-hidden");
 }
@@ -329,10 +525,11 @@ async function init() {
   setupTodayHeightSync();
   setLoading();
 
-  const results = await Promise.allSettled([loadRitual(), loadTasks(), loadMunicipios()]);
+  const results = await Promise.allSettled([loadRitual(), loadTasks(), loadMunicipios(), loadOkr()]);
   const ritualResult = results[0];
   const tasksResult = results[1];
   const municipiosResult = results[2];
+  const okrResult = results[3];
 
   if (ritualResult.status === "rejected") {
     elements.ritualList.innerHTML = "";
@@ -349,6 +546,12 @@ async function init() {
 
   if (municipiosResult.status === "rejected") {
     setError(elements.tasksError, municipiosResult.reason);
+  }
+
+  if (okrResult.status === "rejected") {
+    elements.okrBlock.innerHTML = "";
+    elements.okrStatus.textContent = "Error";
+    setError(elements.okrError, okrResult.reason);
   }
 }
 
